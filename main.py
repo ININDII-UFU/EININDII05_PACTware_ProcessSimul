@@ -60,7 +60,8 @@ class MainWindowTk(tk.Tk):
         self.geometry("1100x650")
 
         # --- internal state/refs -
-        self._running = False
+        self.is_hart_running = False
+        self.is_modbus_running = False
 
         # --- create backend ---
         print("🔄 Criando ReactFactory...")
@@ -193,9 +194,8 @@ class MainWindowTk(tk.Tk):
 
         # popula a lista de COMs e seleciona a preferida do config (se existir)
         self._refresh_hart_ports()
-
-        # garanta que o estado inicial dos widgets reflita “desconectado”
-        self._sync_comm_widgets(disconnected=True)
+        self._toggle_comm_inputs_hart(False)
+        self._toggle_comm_inputs_modbus(False)
 
         # status text
         self.status_var = tk.StringVar(value="Parado")
@@ -236,26 +236,6 @@ class MainWindowTk(tk.Tk):
         if ports and not self.hart_com_var.get():
             self.hart_com_var.set(ports[0])
 
-
-    def _sync_comm_widgets(self, connected=False, disconnected=False):
-        """Habilita/desabilita controles de acordo com o estado da comunicação."""
-        # defina “running” como o seu critério de conexão atual
-        running = connected or (getattr(self, "server", None) and getattr(self.server, "running", False) and not disconnected)
-
-        # botões
-        self.btn_start.configure(state="disabled" if running else "normal")
-        self.btn_stop.configure(state="normal" if running else "disabled")
-
-        # Porta Modbus (Entry) travada quando conectado
-        if hasattr(self, "e_modbus"):
-            self.e_modbus.configure(state="disabled" if running else "normal")
-
-        # Porta COM (Combobox) travada quando conectado
-        if hasattr(self, "cb_hart"):
-            self.cb_hart.configure(state="disabled" if running else "readonly")
-        if hasattr(self, "btn_refresh_hart"):
-            self.btn_refresh_hart.configure(state="disabled" if running else "normal")
-
     def _on_hart_frame(self, hex_str: str):
         def process_on_ui(hrt_comm):
             print(hex_str)
@@ -271,21 +251,18 @@ class MainWindowTk(tk.Tk):
         self.btn_start_hart.configure(state="disabled" if disable else "normal")
         self.btn_stop_hart.configure(state="normal" if disable else "disabled")
         # Porta COM (Combobox) + botão refresh
-        try:
-            self.cb_hart.configure(state="disabled" if disable else "readonly")
-        except Exception:
-            pass
-        try:
-            self.btn_refresh_hart.configure(state="disabled" if disable else "normal")
-        except Exception:
-            pass
+        self.cb_hart.configure(state="disabled" if disable else "readonly")
+        self.btn_refresh_hart.configure(state="disabled" if disable else "normal")
+
 
     def _toggle_comm_inputs_modbus(self, disable: bool):
         """Habilita/desabilita os controles de entrada durante a conexão."""
         # botões
         self.btn_start_modbus.configure(state="disabled" if disable else "normal")
         self.btn_stop_modbus.configure(state="normal" if disable else "disabled")
-        # Porta Modbus (Entry)
+        # Porta Modbus (Entry) travada quando conectado
+        if hasattr(self, "e_modbus"):
+            self.e_modbus.configure(state="disabled" if disable else "normal")
         self.port_entry.configure(state="disabled" if disable else "normal")
 
 
@@ -307,34 +284,21 @@ class MainWindowTk(tk.Tk):
 
             self.is_modbus_running = True
             self._toggle_comm_inputs_modbus(True)
-
             # start simulTf sempre que iniciar Modbus
-            try:
-                self.simulTf.start(True)
-            except:
-                pass
-
-            self._set_main_running_visual(True)
+            self.simulTf.start(True)
             return
 
         # === STOP MODBUS ===
 
         # Se HART estiver rodando → para apenas Modbus
-        try:
-            self.servidor_thread.stop()
-        except:
-            pass
+        self.servidor_thread.stop()
 
         self.is_modbus_running = False
         self._toggle_comm_inputs_modbus(False)
 
         # Se HART NÃO estiver rodando → agora sim para o simulTf
         if not self.is_hart_running:
-            try:
-                self.simulTf.start(False)
-            except:
-                pass
-            self._set_main_running_visual(False)
+            self.simulTf.start(False)
 
     def _startStopHart(self, state: bool):
         if state:  # === START HART ===
@@ -364,46 +328,22 @@ class MainWindowTk(tk.Tk):
 
             self.is_hart_running = True
             self._toggle_comm_inputs_hart(True)
-
             # start simulTf sempre que iniciar HART
-            try:
-                self.simulTf.start(True)
-            except:
-                pass
-
-            self._set_main_running_visual(True)
+            self.simulTf.start(True)
             return
 
         # === STOP HART ===
 
         # Se Modbus estiver rodando → para apenas HART
-        try:
-            self.hart_comm.disconnect()
-        except:
-            pass
+        self.hart_comm.disconnect()
+
 
         self.is_hart_running = False
         self._toggle_comm_inputs_hart(False)
 
         # Se Modbus NÃO estiver rodando → agora sim para o simulTf
         if not self.is_modbus_running:
-            try:
-                self.simulTf.start(False)
-            except:
-                pass
-            self._set_main_running_visual(False)
-
-
-    def _set_main_running_visual(self, running: bool):
-        self._running = running
-        if running:
-            self.status_var.set("Rodando")
-            self.btn_start.state(["disabled"])
-            self.btn_stop.state(["!disabled"])
-        else:
-            self.status_var.set("Parado")
-            self.btn_start.state(["!disabled"])
-            self.btn_stop.state(["disabled"])
+            self.simulTf.start(False)
             
 if __name__ == "__main__":
     app = MainWindowTk()
