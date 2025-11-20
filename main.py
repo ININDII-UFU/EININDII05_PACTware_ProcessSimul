@@ -59,8 +59,7 @@ class MainWindowTk(tk.Tk):
         self.title("HART/MODBUS – Tk UI")
         self.geometry("1100x650")
 
-        # --- internal state/refs ---
-        self.plantViewer = None  # se você tiver um viewer externo, conecte aqui
+        # --- internal state/refs -
         self._running = False
 
         # --- create backend ---
@@ -110,59 +109,87 @@ class MainWindowTk(tk.Tk):
         top = ttk.Frame(self, padding=(10, 8))
         top.pack(side="top", fill="x")
 
-        # Human/Hex selector
-        view_lbl = ttk.Label(top, text="Visualização:")
-        view_lbl.pack(side="left")
+        # Human/Hex selector dentro de um LabelFrame
+        lf_view = ttk.LabelFrame(top, text="Visualização", padding=(6, 4))
+        lf_view.pack(side="left", padx=(0, 10))  # continua na mesma "linha" do top
 
         self.view_var = tk.StringVar(value="human")
-        rb_human = ttk.Radiobutton(top, text="Humano", value="human", variable=self.view_var,
-                                   command=self._on_view_change)
-        rb_hex = ttk.Radiobutton(top, text="Hex", value="hex", variable=self.view_var,
-                                 command=self._on_view_change)
-        rb_human.pack(side="left", padx=(6, 2))
-        rb_hex.pack(side="left")
+        rb_human = ttk.Radiobutton(
+            lf_view,
+            text="Humano",
+            value="human",
+            variable=self.view_var,
+            command=self._on_view_change
+        )
+        rb_hex = ttk.Radiobutton(
+            lf_view,
+            text="Hex",
+            value="hex",
+            variable=self.view_var,
+            command=self._on_view_change
+        )
+        rb_human.pack(side="left", padx=(4, 2))
+        rb_hex.pack(side="left", padx=(0, 2))
 
         # spacing
         ttk.Separator(top, orient="vertical").pack(side="left", fill="y", padx=10)
 
-        # Modbus port + Start/Stop
-        ttk.Label(top, text="Porta Modbus:").pack(side="left")
+        # Modbus port + Start/Stop dentro de um painel (LabelFrame)
+        lf_modbus = ttk.LabelFrame(top, text="Servidor Modbus", padding=(6, 4))
+        lf_modbus.pack(side="left", padx=(0, 10))  # continua na mesma "linha" do top
+
+        ttk.Label(lf_modbus, text="Porta TCP:").pack(side="left")
         self.port_var = tk.StringVar(value="502")
-        self.port_entry = ttk.Entry(top, width=8, textvariable=self.port_var)
+        self.port_entry = ttk.Entry(lf_modbus, width=8, textvariable=self.port_var)
         self.port_entry.pack(side="left", padx=(4, 8))
 
-        self.btn_start = ttk.Button(top, text="Start", command=lambda: self._startStop(True))
-        self.btn_stop = ttk.Button(top, text="Stop", command=lambda: self._startStop(False))
-        self.btn_start.pack(side="left", padx=(0, 4))
-        self.btn_stop.pack(side="left")
-        # --- objetos de backend (ajuste se já existirem) ---
+        self.btn_start_modbus = ttk.Button(lf_modbus, text="Start",
+                                    command=lambda: self._startStopModbus(True))
+        self.btn_stop_modbus = ttk.Button(lf_modbus, text="Stop",
+                                   command=lambda: self._startStopModbus(False))
+        self.btn_start_modbus.pack(side="left", padx=(0, 4))
+        self.btn_stop_modbus.pack(side="left")
+        
+        # spacing entre Modbus e HART
+        ttk.Separator(top, orient="vertical").pack(side="left", fill="y", padx=10)
+
+        # --- backend HART ---
         self.hart_comm = HrtComm(func_read=self._on_hart_frame)
 
-        # self.server já deve existir; se não, crie como você faz hoje
         # --- variáveis de UI ---
-        self.modbus_port_var = tk.StringVar(value=self.modbus_port_var.get() if hasattr(self, "modbus_port_var") else "5020")
-        self.hart_com_var    = tk.StringVar(value="")
+        self.modbus_port_var = tk.StringVar(
+            value=self.modbus_port_var.get() if hasattr(self, "modbus_port_var") else "502"
+        )
+        self.hart_com_var = tk.StringVar(value="")
 
-        # --- referência à sua barra existente ---
-        topbar = self.topbar if hasattr(self, "topbar") else ttk.Frame(self)   # use a mesma onde estão Start/Stop
-        if not hasattr(self, "topbar"):
-            topbar.pack(fill="x", padx=8, pady=6)
+        # ====== HART Comm dentro de um LabelFrame ======
+        lf_hart = ttk.LabelFrame(top, text="Hart Comm", padding=(6, 4))
+        lf_hart.pack(side="left", padx=(0, 10))
 
-        # supondo que você já criou:
-        # self.e_modbus  -> Entry da Porta Modbus
-        # self.btn_start -> Botão Start  |  self.btn_stop -> Botão Stop
+        ttk.Label(lf_hart, text="Porta Serial:").pack(side="left", padx=(0, 4))
 
-        # ====== PORTA COM (HART) — label + combobox + refresh ======
-        # coloque AO LADO dos botões: usamos a próxima coluna livre
-        next_col = topbar.grid_size()[0]
+        self.cb_hart = ttk.Combobox(
+            lf_hart,
+            textvariable=self.hart_com_var,
+            width=10,
+            state="readonly",
+            values=[]
+        )
+        self.cb_hart.pack(side="left", padx=(0, 4))
 
-        ttk.Label(topbar, text="Porta COM:").grid(row=0, column=next_col,   padx=(16, 4), sticky="e")
-        self.cb_hart = ttk.Combobox(topbar, textvariable=self.hart_com_var,
-                                    width=10, state="readonly", values=[])
-        self.cb_hart.grid(row=0, column=next_col+1, sticky="w", padx=(0,4))
-
-        self.btn_refresh_hart = ttk.Button(topbar, text="↻", width=3, command=self._refresh_hart_ports)
-        self.btn_refresh_hart.grid(row=0, column=next_col+2, sticky="w")
+        self.btn_refresh_hart = ttk.Button(
+            lf_hart,
+            text="↻",
+            width=3,
+            command=self._refresh_hart_ports
+        )
+        self.btn_refresh_hart.pack(side="left")
+        self.btn_start_hart = ttk.Button(lf_hart, text="Start",
+                                    command=lambda: self._startStopHart(True))
+        self.btn_stop_hart = ttk.Button(lf_hart, text="Stop",
+                                   command=lambda: self._startStopHart(False))
+        self.btn_start_hart.pack(side="left", padx=(0, 4))
+        self.btn_stop_hart.pack(side="left")
 
         # popula a lista de COMs e seleciona a preferida do config (se existir)
         self._refresh_hart_ports()
@@ -239,13 +266,8 @@ class MainWindowTk(tk.Tk):
                 print("Failed to write frame")
         self.after(0, process_on_ui, self.hart_comm)  # joga para a main thread do Tk
         
-    def _toggle_comm_inputs(self, disable: bool):
+    def _toggle_comm_inputs_hart(self, disable: bool):
         """Habilita/desabilita os controles de entrada durante a conexão."""
-        # Porta Modbus (Entry)
-        try:
-            self.port_entry.configure(state="disabled" if disable else "normal")
-        except Exception:
-            pass
         # Porta COM (Combobox) + botão refresh
         try:
             self.cb_hart.configure(state="disabled" if disable else "readonly")
@@ -256,19 +278,63 @@ class MainWindowTk(tk.Tk):
         except Exception:
             pass
 
-    def _startStop(self, state: bool):
-        if state:
+    def _toggle_comm_inputs_modbus(self, disable: bool):
+        """Habilita/desabilita os controles de entrada durante a conexão."""
+        # Porta Modbus (Entry)
+        try:
+            self.port_entry.configure(state="disabled" if disable else "normal")
+        except Exception:
+            pass
+
+    def _startStopModbus(self, state: bool):
+        if state:  # === START MODBUS ===
             try:
                 port = int(self.port_var.get().strip())
             except ValueError:
-                messagebox.showerror("Porta inválida", "Informe um número de porta válido, ex.: 5020", parent=self)
+                messagebox.showerror("Porta inválida",
+                                    "Informe um número de porta válido, ex.: 5020",
+                                    parent=self)
                 return
+
             try:
                 self.servidor_thread.start(port=port)
             except Exception as e:
                 messagebox.showerror("Erro ao iniciar Modbus", str(e), parent=self)
                 return
 
+            self.is_modbus_running = True
+            self._toggle_comm_inputs_modbus(True)
+
+            # start simulTf sempre que iniciar Modbus
+            try:
+                self.simulTf.start(True)
+            except:
+                pass
+
+            self._set_main_running_visual(True)
+            return
+
+        # === STOP MODBUS ===
+
+        # Se HART estiver rodando → para apenas Modbus
+        try:
+            self.servidor_thread.stop()
+        except:
+            pass
+
+        self.is_modbus_running = False
+        self._toggle_comm_inputs_modbus(False)
+
+        # Se HART NÃO estiver rodando → agora sim para o simulTf
+        if not self.is_hart_running:
+            try:
+                self.simulTf.start(False)
+            except:
+                pass
+            self._set_main_running_visual(False)
+
+    def _startStopHart(self, state: bool):
+        if state:  # === START HART ===
             hart_port = (self.hart_com_var.get() or "").strip()
             try:
                 if hart_port:
@@ -277,42 +343,53 @@ class MainWindowTk(tk.Tk):
             except Exception as e:
                 ok = False
                 err = str(e)
+
             if not ok:
-                try:
-                    self.servidor_thread.stop()
-                except Exception:
-                    pass
-                detail = err if 'err' in locals() else getattr(getattr(self.hart_comm, "_comm_serial", None), "last_error", "") or ""
+                detail = err if 'err' in locals() else getattr(
+                    getattr(self.hart_comm, "_comm_serial", None),
+                    "last_error",
+                    ""
+                ) or ""
+
                 messagebox.showerror(
                     "Erro ao iniciar HART",
-                    f"Não foi possível abrir a porta HART {hart_port or '(config)'}."
-                    f" Verifique a COM e tente novamente. Detalhes: {detail}",
+                    f"Não foi possível abrir a porta HART {hart_port or '(config)'}.\n"
+                    f"Detalhes: {detail}",
                     parent=self
                 )
                 return
 
-            self._toggle_comm_inputs(True)
-        else:
-            try:
-                self.servidor_thread.stop()
-            except Exception:
-                pass
-            try:
-                self.hart_comm.disconnect()
-            except Exception:
-                pass
-            self._toggle_comm_inputs(False)
+            self.is_hart_running = True
+            self._toggle_comm_inputs_hart(True)
 
-        try:
-            self.simulTf.start(state)
-        except Exception:
-            pass
-        self._set_main_running_visual(state)
-        if getattr(self, "plantViewer", None) and hasattr(self.plantViewer, "sync_running_state"):
+            # start simulTf sempre que iniciar HART
             try:
-                self.plantViewer.sync_running_state(state)
-            except Exception:
+                self.simulTf.start(True)
+            except:
                 pass
+
+            self._set_main_running_visual(True)
+            return
+
+        # === STOP HART ===
+
+        # Se Modbus estiver rodando → para apenas HART
+        try:
+            self.hart_comm.disconnect()
+        except:
+            pass
+
+        self.is_hart_running = False
+        self._toggle_comm_inputs_hart(False)
+
+        # Se Modbus NÃO estiver rodando → agora sim para o simulTf
+        if not self.is_modbus_running:
+            try:
+                self.simulTf.start(False)
+            except:
+                pass
+            self._set_main_running_visual(False)
+
 
     def _set_main_running_visual(self, running: bool):
         self._running = running
