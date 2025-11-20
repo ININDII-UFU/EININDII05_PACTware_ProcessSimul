@@ -268,6 +268,8 @@ class MainWindowTk(tk.Tk):
         
     def _toggle_comm_inputs_hart(self, disable: bool):
         """Habilita/desabilita os controles de entrada durante a conexão."""
+        self.btn_start_hart.configure(state="disabled" if disable else "normal")
+        self.btn_stop_hart.configure(state="normal" if disable else "disabled")
         # Porta COM (Combobox) + botão refresh
         try:
             self.cb_hart.configure(state="disabled" if disable else "readonly")
@@ -280,11 +282,12 @@ class MainWindowTk(tk.Tk):
 
     def _toggle_comm_inputs_modbus(self, disable: bool):
         """Habilita/desabilita os controles de entrada durante a conexão."""
+        # botões
+        self.btn_start_modbus.configure(state="disabled" if disable else "normal")
+        self.btn_stop_modbus.configure(state="normal" if disable else "disabled")
         # Porta Modbus (Entry)
-        try:
-            self.port_entry.configure(state="disabled" if disable else "normal")
-        except Exception:
-            pass
+        self.port_entry.configure(state="disabled" if disable else "normal")
+
 
     def _startStopModbus(self, state: bool):
         if state:  # === START MODBUS ===
