@@ -98,17 +98,9 @@ jobs:
       # ------------------------------------------------------------
       # BUILD NUITKA
       # ------------------------------------------------------------
-<<<<<<< HEAD
       - name: Build EXE with Nuitka
-=======
-      - name: Build EXE with PyOxidizer (verbose)
-        working-directory: ${{ github.workspace }}
->>>>>>> 47053796b81e72bf6e5475b61a618853e7713d72
         shell: pwsh
-        env:
-          RUST_BACKTRACE: 1
         run: |
-<<<<<<< HEAD
           $name = "${{ env.APP_NAME }}-${{ env.APP_VER }}"
 
           python -m nuitka `
@@ -126,14 +118,9 @@ jobs:
           Write-Host "Conteúdo de dist/:"
           Get-ChildItem dist -Recurse
 
-=======
-          Write-Host "=== RUNNING PYOXIDIZER (VERBOSE) ==="
-          pyoxidizer build --release --verbose
->>>>>>> 47053796b81e72bf6e5475b61a618853e7713d72
       # ------------------------------------------------------------
       # RENOMEAR O EXE FINAL
       # ------------------------------------------------------------
-<<<<<<< HEAD
       - name: Rename final EXE
         shell: pwsh
         run: |
@@ -144,20 +131,6 @@ jobs:
           Move-Item $exe.FullName $target -Force
           Write-Host "EXE Final: $target"
 
-=======
-      - name: Locate final EXE
-        if: ${{ success() }}
-        working-directory: ${{ github.workspace }}
-        shell: pwsh
-        run: |
-          $exe = Get-ChildItem -Recurse "build" -Filter "*.exe" | Select-Object -First 1
-          if (-not $exe) { throw "Nenhum EXE encontrado!" }
-      
-          New-Item -ItemType Directory -Force -Path dist | Out-Null
-          $dest = "dist/${{ env.APP_NAME }}-${{ env.APP_VER }}.exe"
-          Copy-Item $exe.FullName $dest -Force
-          Write-Host "EXE Final: $dest"
->>>>>>> 47053796b81e72bf6e5475b61a618853e7713d72
       # ------------------------------------------------------------
       # ARTEFATO
       # ------------------------------------------------------------
