@@ -95,6 +95,25 @@ jobs:
           $repo = "${{ github.repository }}".Split("/")[1]
           "APP_NAME=$repo" | Out-File $env:GITHUB_ENV -Append
 
+          
+      - name: Debug assets and db
+        working-directory: ${{ github.workspace }}
+        shell: pwsh
+        run: |
+          Write-Host "=== LISTANDO assets ==="
+          if (Test-Path "assets") {
+            Get-ChildItem -Force assets
+          } else {
+            Write-Host "assets NAO existe"
+          }
+
+          Write-Host "=== LISTANDO db ==="
+          if (Test-Path "db") {
+            Get-ChildItem -Force db
+          } else {
+            Write-Host "db NAO existe"
+          }
+
       # ------------------------------------------------------------
       # 7) Compilar com PyOxidizer
       # ------------------------------------------------------------
