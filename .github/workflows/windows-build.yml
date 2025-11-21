@@ -37,9 +37,6 @@ jobs:
         with:
           fetch-depth: 0
           clean: false
-          sparse-checkout: |
-            *
-
       # ------------------------------------------------------------
       # 2) Mostrar estrutura (debug opcional)
       # ------------------------------------------------------------
