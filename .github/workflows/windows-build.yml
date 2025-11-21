@@ -1,50 +1,150 @@
-name: Debug Paths
+name: Windows EXE (PyOxidizer)
 
 on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão (tag) ex.: v0.0.5"
+        required: true
+        type: string
+      tag_repository:
+        description: "Criar e enviar tag?"
+        required: true
+        default: true
+        type: boolean
+      publish_release:
+        description: "Publicar Release?"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
 
 jobs:
-  debug:
+  build-win:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
+      # ------------------------------------------------------------
+      # 1) CHECKOUT COMPLETO (inclui arquivos .bzl)
+      # ------------------------------------------------------------
+      - name: Checkout repository (FULL)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          clean: false
+          sparse-checkout: |
+            *
 
-      - name: Print workspace variables
+      # ------------------------------------------------------------
+      # 2) Mostrar estrutura (debug opcional)
+      # ------------------------------------------------------------
+      - name: Show structure
         shell: pwsh
         run: |
-          Write-Host "=== github.workspace ==="
+          Write-Host "=== WORKSPACE ==="
           Write-Host "${{ github.workspace }}"
-          Write-Host ""
+          Write-Host "=== ROOT LISTING ==="
+          Get-ChildItem -Force
 
-      - name: List workspace root
+          Write-Host "=== SEARCH pyoxidizer.bzl ==="
+          Get-ChildItem -Recurse -Force -Filter "*.bzl" | ForEach-Object {
+            Write-Host "FOUND: $($_.FullName)"
+          }
+
+      # ------------------------------------------------------------
+      # 3) Instalar Rust (requisito do PyOxidizer)
+      # ------------------------------------------------------------
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      # ------------------------------------------------------------
+      # 4) Setup Python
+      # ------------------------------------------------------------
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # ------------------------------------------------------------
+      # 5) Instalar PyOxidizer
+      # ------------------------------------------------------------
+      - name: Install PyOxidizer
+        shell: pwsh
+        run: |
+          pip install pyoxidizer
+
+      # ------------------------------------------------------------
+      # 6) Calcular versão
+      # ------------------------------------------------------------
+      - name: Compute version and names
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $ver = "${{ inputs.version }}"
+          }
+          elseif ("${{ github.ref }}".StartsWith("refs/tags/")) {
+            $ver = "${{ github.ref_name }}"
+          }
+          else {
+            $ver = "dev-${{ github.run_number }}"
+          }
+
+          "APP_VER=$ver" | Out-File $env:GITHUB_ENV -Append
+          $repo = "${{ github.repository }}".Split("/")[1]
+          "APP_NAME=$repo" | Out-File $env:GITHUB_ENV -Append
+
+      # ------------------------------------------------------------
+      # 7) Compilar com PyOxidizer
+      # ------------------------------------------------------------
+      - name: Build EXE with PyOxidizer
         working-directory: ${{ github.workspace }}
         shell: pwsh
         run: |
-          Write-Host "=== LISTING CURRENT DIRECTORY ==="
-          Get-ChildItem -Force
-          Write-Host ""
-          Write-Host "=== FULL RECURSIVE TREE ==="
-          Get-ChildItem -Recurse -Force
+          Write-Host "=== RUNNING PYOXIDIZER ==="
+          pyoxidizer build --release
 
-      - name: List parent directory
-        working-directory: ${{ github.workspace }}\..
+          Write-Host "=== BUILD DIRECTORY ==="
+          Get-ChildItem -Recurse "build" | Format-Table -AutoSize
+
+      # ------------------------------------------------------------
+      # 8) Copiar EXE final
+      # ------------------------------------------------------------
+      - name: Locate final EXE
+        working-directory: ${{ github.workspace }}
         shell: pwsh
         run: |
-          Write-Host "=== LISTING PARENT DIRECTORY ==="
-          Get-ChildItem -Force
-          Write-Host ""
-          Write-Host "=== FULL RECURSIVE TREE OF PARENT ==="
-          Get-ChildItem -Recurse -Force
+          $exe = Get-ChildItem -Recurse "build\windows\x86_64\release" -Filter "*.exe" | Select-Object -First 1
 
-      - name: Search for PyOxidizer config
-        working-directory: ${{ github.workspace }}\..
-        shell: pwsh
-        run: |
-          Write-Host "=== Searching for .bzl config files ==="
-          Get-ChildItem -Recurse -Filter "*.bzl" -Force | ForEach-Object {
-            Write-Host "FOUND: $($_.FullName)"
+          if (-not $exe) {
+            throw "Nenhum EXE encontrado!"
           }
+
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $dest = "dist/${{ env.APP_NAME }}-${{ env.APP_VER }}.exe"
+          Copy-Item $exe.FullName $dest -Force
+          Write-Host "EXE Final: $dest"
+
+      # ------------------------------------------------------------
+      # 9) Upload artefato
+      # ------------------------------------------------------------
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-${{ env.APP_VER }}-win
+          path: dist/*.exe
+
+      # ------------------------------------------------------------
+      # 10) Publish Release
+      # ------------------------------------------------------------
+      - name: Publish GitHub Release
+        if: ${{ startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.publish_release) }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.APP_VER }}
+          files: dist/*.exe
+          generate_release_notes: true
