@@ -62,13 +62,14 @@ jobs:
           "APP_NAME=$repo" | Out-File $env:GITHUB_ENV -Append
 
       - name: Build EXE with PyOxidizer
-        working-directory: ${{ github.workspace }}
+        working-directory: ${{ github.workspace }}\..
         run: |
           pyoxidizer build --release
           echo "Build output:"
           dir build /s
 
       - name: Locate final EXE
+        working-directory: ${{ github.workspace }}\..
         shell: pwsh
         run: |
           $exe = Get-ChildItem -Recurse build\windows\x86_64\release\*.exe | Select-Object -First 1
