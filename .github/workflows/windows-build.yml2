@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 name: Windows EXE (PyInstaller)
+=======
+name: Windows EXE (PyOxidizer)
+>>>>>>> def7a7bf439f861b67897fb66e1a30894b1d0bcd
 
 on:
   push:
@@ -11,12 +15,20 @@ on:
         required: true
         type: string
       tag_repository:
+<<<<<<< HEAD
         description: "Criar e enviar tag para o repositório?"
+=======
+        description: "Criar e enviar tag?"
+>>>>>>> def7a7bf439f861b67897fb66e1a30894b1d0bcd
         required: true
         default: true
         type: boolean
       publish_release:
+<<<<<<< HEAD
         description: "Publicar Release no GitHub?"
+=======
+        description: "Publicar Release?"
+>>>>>>> def7a7bf439f861b67897fb66e1a30894b1d0bcd
         required: true
         default: true
         type: boolean
@@ -27,10 +39,15 @@ permissions:
 jobs:
   build-win:
     runs-on: windows-latest
+<<<<<<< HEAD
+=======
+
+>>>>>>> def7a7bf439f861b67897fb66e1a30894b1d0bcd
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+<<<<<<< HEAD
           fetch-depth: 0   # necessário para criar/push de tag
 
       - name: Setup Python
@@ -48,6 +65,21 @@ jobs:
           pip install pyinstaller pyinstaller-hooks-contrib
 
       # Define APP_VER e APP_NAME: usa a tag do push OU os inputs do workflow_dispatch
+=======
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install PyOxidizer
+        run: pip install pyoxidizer
+
+>>>>>>> def7a7bf439f861b67897fb66e1a30894b1d0bcd
       - name: Compute version and names
         shell: pwsh
         run: |
@@ -60,6 +92,7 @@ jobs:
           else {
             $ver = "dev-${{ github.run_number }}"
           }
+<<<<<<< HEAD
           "APP_VER=$ver" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
           $repo = "${{ github.repository }}".Split("/")[1]
@@ -137,10 +170,35 @@ jobs:
           Write-Host "Final EXE: $target"
 
       - name: Upload artifact (.exe)
+=======
+          "APP_VER=$ver" | Out-File $env:GITHUB_ENV -Append
+          $repo = "${{ github.repository }}".Split("/")[1]
+          "APP_NAME=$repo" | Out-File $env:GITHUB_ENV -Append
+
+      - name: Build EXE with PyOxidizer
+        run: |
+          pyoxidizer build --release
+          echo "Build output:"
+          dir build /s
+
+      - name: Locate final EXE
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Recurse build\windows\x86_64\release\*.exe | Select-Object -First 1
+          if (-not $exe) { throw "Nenhum EXE gerado!" }
+
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $target = "dist/${{ env.APP_NAME }}-${{ env.APP_VER }}.exe"
+          Copy-Item $exe.FullName $target -Force
+          Write-Host "EXE Final: $target"
+
+      - name: Upload artifact
+>>>>>>> def7a7bf439f861b67897fb66e1a30894b1d0bcd
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APP_NAME }}-${{ env.APP_VER }}-win
           path: dist/*.exe
+<<<<<<< HEAD
           if-no-files-found: error
 
       # Publica Release:
@@ -153,3 +211,13 @@ jobs:
           tag_name: ${{ env.APP_VER }}   # garante que, no dispatch, use a versão informada
           files: dist/*.exe
           generate_release_notes: true
+=======
+
+      - name: Publish Release
+        if: ${{ startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.publish_release) }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.APP_VER }}
+          files: dist/*.exe
+          generate_release_notes: true
+>>>>>>> def7a7bf439f861b67897fb66e1a30894b1d0bcd
