@@ -1,0 +1,93 @@
+name: Windows EXE (PyOxidizer)
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão (tag) ex.: v0.0.5"
+        required: true
+        type: string
+      tag_repository:
+        description: "Criar e enviar tag?"
+        required: true
+        default: true
+        type: boolean
+      publish_release:
+        description: "Publicar Release?"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  build-win:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install PyOxidizer
+        run: pip install pyoxidizer
+
+      - name: Compute version and names
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $ver = "${{ inputs.version }}"
+          }
+          elseif ("${{ github.ref }}".StartsWith("refs/tags/")) {
+            $ver = "${{ github.ref_name }}"
+          }
+          else {
+            $ver = "dev-${{ github.run_number }}"
+          }
+          "APP_VER=$ver" | Out-File $env:GITHUB_ENV -Append
+          $repo = "${{ github.repository }}".Split("/")[1]
+          "APP_NAME=$repo" | Out-File $env:GITHUB_ENV -Append
+
+      - name: Build EXE with PyOxidizer
+        run: |
+          pyoxidizer build --release
+          echo "Build output:"
+          dir build /s
+
+      - name: Locate final EXE
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Recurse build\windows\x86_64\release\*.exe | Select-Object -First 1
+          if (-not $exe) { throw "Nenhum EXE gerado!" }
+
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $target = "dist/${{ env.APP_NAME }}-${{ env.APP_VER }}.exe"
+          Copy-Item $exe.FullName $target -Force
+          Write-Host "EXE Final: $target"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-${{ env.APP_VER }}-win
+          path: dist/*.exe
+
+      - name: Publish Release
+        if: ${{ startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.publish_release) }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.APP_VER }}
+          files: dist/*.exe
+          generate_release_notes: true
