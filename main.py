@@ -50,14 +50,55 @@ if not hasattr(DBTableWidgetTk, "_fmt_machine_hex"):
             return str(value)
     DBTableWidgetTk._fmt_machine_hex = _fmt_machine_hex
 # -------------------------------------------------------------------------------
+import threading
+from PIL import Image, ImageTk
 
-class MainWindowTk(tk.Tk):
-    def __init__(self):
-        super().__init__()
+def show_splash_scaled(root, image_path):
+    """
+    Mostra splash redimensionada para ~70% da tela,
+    e retorna o objeto Toplevel para ser destruído depois.
+    """
+    splash = tk.Toplevel(root)
+    splash.overrideredirect(True)
+
+    screen_w = root.winfo_screenwidth()
+    screen_h = root.winfo_screenheight()
+
+    # Carrega a imagem
+    img = Image.open(image_path)
+
+    # Fator de escala (70% da tela)
+    max_w = int(screen_w * 0.7)
+    max_h = int(screen_h * 0.7)
+
+    # Mantém proporção
+    img.thumbnail((max_w, max_h))
+
+    splash_img = ImageTk.PhotoImage(img)
+
+    w, h = img.size
+    x = (screen_w - w) // 2
+    y = (screen_h - h) // 2
+
+    splash.geometry(f"{w}x{h}+{x}+{y}")
+
+    label = tk.Label(splash, image=splash_img)
+    label.image = splash_img
+    label.pack()
+
+    return splash
+
+
+class MainWindowTk(ttk.Frame):
+    def __init__(self, master):
+        super().__init__(master)
         print("🚀 Iniciando MainWindow...")
 
-        self.title("HART/MODBUS – Tk UI")
-        self.geometry("1100x650")
+        master.title("HART/MODBUS – Tk UI")
+        master.geometry("1100x650")
+
+        # garante que o frame ocupa a janela inteira
+        self.pack(fill="both", expand=True)
 
         # --- internal state/refs -
         self.is_hart_running = False
@@ -345,6 +386,25 @@ class MainWindowTk(tk.Tk):
         if not self.is_modbus_running:
             self.simulTf.start(False)
             
+# --------------------- main app entry point ---------------------  
 if __name__ == "__main__":
-    app = MainWindowTk()
-    app.mainloop()
+    root = tk.Tk()
+    root.withdraw()  # esconder a janela principal antes do splash
+
+    splash_path = "assets/splash_image.png"
+    splash = show_splash_scaled(root, splash_path)
+
+    def init_app():
+        # cria a UI principal (SEM mainloop)
+        app = MainWindowTk(root)
+
+        # quando terminar de montar:
+        splash.destroy()
+        root.deiconify()  # mostra a janela principal
+
+    # executa montagem pesada NA THREAD PRINCIPAL (seguro!)
+    root.after(200, init_app)
+
+    root.mainloop()
+
+
