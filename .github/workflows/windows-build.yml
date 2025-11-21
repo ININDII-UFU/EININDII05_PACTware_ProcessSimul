@@ -1,4 +1,4 @@
-name: Debug PyOxidizer Paths
+name: Debug Paths
 
 on:
   workflow_dispatch:
@@ -6,65 +6,26 @@ on:
 jobs:
   debug:
     runs-on: windows-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Show GitHub workspace info
+      - name: Show workspace info (fixed)
         shell: pwsh
         run: |
           Write-Host "=== GITHUB WORKSPACE ==="
-          Write-Host "github.workspace:"
           Write-Host "${{ github.workspace }}"
           Write-Host ""
-          Write-Host "Current Directory (pwd):"
-          pwsh -Command "pwd"
+          Write-Host "=== CURRENT DIRECTORY ==="
+          pwd
           Write-Host ""
-          Write-Host "Listing workspace root:"
-          ls -la "${{ github.workspace }}"
-
-      - name: Show directory tree recursively (1 level)
-        shell: pwsh
-        run: |
-          Write-Host "=== ROOT CONTENT (recursive) ==="
-          Get-ChildItem -Recurse -Depth 2 "${{ github.workspace }}" | Format-List
-
-      - name: Show full path to config files
-        shell: pwsh
-        run: |
-          Write-Host "=== LOOKING FOR OXIDIZER FILES ==="
-          Get-ChildItem -Recurse -Filter "oxidizer.bzl" -ErrorAction SilentlyContinue | ForEach-Object {
-            Write-Host "FOUND oxidizer.bzl:" $_.FullName
+          Write-Host "=== LISTING CURRENT DIR ==="
+          Get-ChildItem -Force
+          Write-Host ""
+          Write-Host "=== LISTING PARENT DIR ==="
+          Get-ChildItem -Force "${{ github.workspace }}\.."
+          Write-Host ""
+          Write-Host "=== LOOKING FOR *.bzl FILES ==="
+          Get-ChildItem -Recurse -Force -Filter "*.bzl" | ForEach-Object {
+            Write-Host "FOUND: $($_.FullName)"
           }
-          Get-ChildItem -Recurse -Filter "pyoxidizer.bzl" -ErrorAction SilentlyContinue | ForEach-Object {
-            Write-Host "FOUND pyoxidizer.bzl:" $_.FullName
-          }
-
-      - name: Check working-directory behaviors
-        shell: pwsh
-        run: |
-          Write-Host "=== TESTING working-directory ==="
-          Write-Host "---- workspace ----"
-          pwsh -Command "Set-Location '${{ github.workspace }}'; pwd; ls -la"
-          Write-Host "---- workspace/.. ----"
-          pwsh -Command "Set-Location '${{ github.workspace }}\..'; pwd; ls -la"
-          Write-Host "---- workspace/../.. ----"
-          pwsh -Command "Set-Location '${{ github.workspace }}\..\..'; pwd; ls -la"
-
-      - name: Test PyOxidizer lookup on each directory
-        shell: pwsh
-        run: |
-          Write-Host "=== TESTING pyoxidizer --config-file ==="
-
-          $dirs = @(
-            "${{ github.workspace }}",
-            "${{ github.workspace }}\..",
-            "${{ github.workspace }}\..\.."
-          )
-          
-          foreach ($d in $dirs) {
-            Write-Host ""
-            Write-Host "---- Trying directory: $d ----"
