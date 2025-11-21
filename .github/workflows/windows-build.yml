@@ -78,9 +78,12 @@ jobs:
           }
 
           "APP_VER=$ver" | Out-File $env:GITHUB_ENV -Append
-          $repo = "${{ github.repository }}".Split("/")[1]
-          "APP_NAME=$repo" | Out-File $env:GITHUB_ENV -Append
-          Write-Host "APP_VER=$ver | APP_NAME=$repo"
+
+          # FIXO: nome do app
+          $appName = "ProcessSimul"
+          "APP_NAME=$appName" | Out-File $env:GITHUB_ENV -Append
+
+          Write-Host "APP_VER=$ver | APP_NAME=$appName"
 
       # ------------------------------------------------------------
       # DEBUG OPCIONAL (listar pastas)
