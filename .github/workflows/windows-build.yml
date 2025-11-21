@@ -117,34 +117,29 @@ jobs:
       # ------------------------------------------------------------
       # 7) Compilar com PyOxidizer
       # ------------------------------------------------------------
-      - name: Build EXE with PyOxidizer
+      - name: Build EXE with PyOxidizer (verbose)
         working-directory: ${{ github.workspace }}
         shell: pwsh
+        env:
+          RUST_BACKTRACE: 1
         run: |
-          Write-Host "=== RUNNING PYOXIDIZER ==="
-          pyoxidizer build --release
-
-          Write-Host "=== BUILD DIRECTORY ==="
-          Get-ChildItem -Recurse "build" | Format-Table -AutoSize
-
+          Write-Host "=== RUNNING PYOXIDIZER (VERBOSE) ==="
+          pyoxidizer build --release --verbose
       # ------------------------------------------------------------
       # 8) Copiar EXE final
       # ------------------------------------------------------------
       - name: Locate final EXE
+        if: ${{ success() }}
         working-directory: ${{ github.workspace }}
         shell: pwsh
         run: |
-          $exe = Get-ChildItem -Recurse "build\windows\x86_64\release" -Filter "*.exe" | Select-Object -First 1
-
-          if (-not $exe) {
-            throw "Nenhum EXE encontrado!"
-          }
-
+          $exe = Get-ChildItem -Recurse "build" -Filter "*.exe" | Select-Object -First 1
+          if (-not $exe) { throw "Nenhum EXE encontrado!" }
+      
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           $dest = "dist/${{ env.APP_NAME }}-${{ env.APP_VER }}.exe"
           Copy-Item $exe.FullName $dest -Force
           Write-Host "EXE Final: $dest"
-
       # ------------------------------------------------------------
       # 9) Upload artefato
       # ------------------------------------------------------------
