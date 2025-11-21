@@ -1,0 +1,155 @@
+name: Windows EXE (PyInstaller)
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão (tag) ex.: v0.0.5"
+        required: true
+        type: string
+      tag_repository:
+        description: "Criar e enviar tag para o repositório?"
+        required: true
+        default: true
+        type: boolean
+      publish_release:
+        description: "Publicar Release no GitHub?"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # necessário para criar/push de tag
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          if (Test-Path requirements.txt) { pip install -r requirements.txt }
+          pip install pyinstaller pyinstaller-hooks-contrib
+
+      # Define APP_VER e APP_NAME: usa a tag do push OU os inputs do workflow_dispatch
+      - name: Compute version and names
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $ver = "${{ inputs.version }}"
+          }
+          elseif ("${{ github.ref }}".StartsWith("refs/tags/")) {
+            $ver = "${{ github.ref_name }}"
+          }
+          else {
+            $ver = "dev-${{ github.run_number }}"
+          }
+          "APP_VER=$ver" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          $repo = "${{ github.repository }}".Split("/")[1]
+          "APP_NAME=$repo" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "APP_VER=$ver | APP_NAME=$repo"
+
+      # (Opcional) cria e envia a tag quando disparado manualmente
+      - name: Create & push tag (manual dispatch)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_repository }}
+        shell: bash
+        run: |
+          set -e
+          VER="${{ env.APP_VER }}"
+          [[ "$VER" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]] || { echo "Formato de versão inválido: $VER (esperado: vX.Y.Z)"; exit 1; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Se a tag já existir remotamente, não recria
+          if git rev-parse "$VER" >/dev/null 2>&1; then
+            echo "Tag $VER já existe localmente."
+          else
+            git tag -a "$VER" -m "Release $VER"
+          fi
+          git push origin "refs/tags/$VER" || echo "Tag já pode existir no remoto; seguindo..."
+
+      - name: Locate entry and db folder
+        shell: pwsh
+        run: |
+          if (Test-Path "main.py") { $entry="main.py" } else { throw "main.py não encontrado na raiz." }
+          "ENTRY=$entry" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          if (-not (Test-Path "db")) { throw "Pasta 'db' não encontrada na raiz do projeto." }
+          $hasFiles = (Get-ChildItem -Recurse -File db | Measure-Object).Count -gt 0
+          if (-not $hasFiles) { throw "A pasta 'db' está vazia. Adicione o(s) arquivo(s) do banco." }
+          Write-Host "ENTRY=$entry | db/ OK"
+
+      - name: Build EXE (PyInstaller)
+        shell: pwsh
+        run: |
+          if (Test-Path build) { Remove-Item build -Recurse -Force }
+          if (Test-Path dist)  { Remove-Item dist  -Recurse -Force }
+
+          $name = "${{ env.APP_NAME }}-${{ env.APP_VER }}"
+          $args = @(
+            "--noconfirm","--clean","--onefile","--windowed",
+            "-n", $name
+          )
+          if (Test-Path "assets/app.ico") { $args += @("-i","assets/app.ico") }
+          $args += @("--add-data","db;db")
+
+          $args += @(
+            "--collect-all","pymodbus",
+            "--hidden-import","pymodbus.server",
+            "--hidden-import","pymodbus.server.async_io",
+            "--hidden-import","pymodbus.server.tcp",
+            "--hidden-import","pymodbus.datastore",
+            "--hidden-import","pymodbus.transaction",
+            "--hidden-import","pymodbus.framer",
+            "--hidden-import","pymodbus.framer.rtu_framer",
+            "--hidden-import","pymodbus.framer.socket_framer"
+          )
+          # entrypoint
+          $args += @("${{ env.ENTRY }}")
+          Write-Host "Running: python -m PyInstaller $($args -join ' ')"
+          python -m PyInstaller @args
+
+          Write-Host "Dist contents:"
+          Get-ChildItem dist -Recurse | Format-Table -AutoSize
+
+      - name: Ensure final exe name
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path dist -Filter "*.exe" -File | Select-Object -First 1
+          if (-not $exe) { throw "Nenhum .exe gerado em dist/." }
+          $target = Join-Path $exe.Directory.FullName "${{ env.APP_NAME }}-${{ env.APP_VER }}.exe"
+          if ($exe.FullName -ne $target) { Move-Item $exe.FullName $target -Force }
+          Write-Host "Final EXE: $target"
+
+      - name: Upload artifact (.exe)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-${{ env.APP_VER }}-win
+          path: dist/*.exe
+          if-no-files-found: error
+
+      # Publica Release:
+      # - quando for push de tag (fluxo normal), ou
+      # - quando for workflow_dispatch com publish_release=true
+      - name: Publish GitHub Release
+        if: ${{ startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.publish_release) }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.APP_VER }}   # garante que, no dispatch, use a versão informada
+          files: dist/*.exe
+          generate_release_notes: true
