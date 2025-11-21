@@ -1,95 +1,70 @@
-name: Windows EXE (PyOxidizer)
+name: Debug PyOxidizer Paths
 
 on:
-  push:
-    branches: [ main, master ]
-    tags: [ 'v*' ]
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Versão (tag) ex.: v0.0.5"
-        required: true
-        type: string
-      tag_repository:
-        description: "Criar e enviar tag?"
-        required: true
-        default: true
-        type: boolean
-      publish_release:
-        description: "Publicar Release?"
-        required: true
-        default: true
-        type: boolean
-
-permissions:
-  contents: write
 
 jobs:
-  build-win:
+  debug:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install PyOxidizer
-        run: pip install pyoxidizer
-
-      - name: Compute version and names
+      - name: Show GitHub workspace info
         shell: pwsh
         run: |
-          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
-            $ver = "${{ inputs.version }}"
-          }
-          elseif ("${{ github.ref }}".StartsWith("refs/tags/")) {
-            $ver = "${{ github.ref_name }}"
-          }
-          else {
-            $ver = "dev-${{ github.run_number }}"
-          }
-          "APP_VER=$ver" | Out-File $env:GITHUB_ENV -Append
-          $repo = "${{ github.repository }}".Split("/")[1]
-          "APP_NAME=$repo" | Out-File $env:GITHUB_ENV -Append
+          Write-Host "=== GITHUB WORKSPACE ==="
+          Write-Host "github.workspace:"
+          Write-Host "${{ github.workspace }}"
+          Write-Host ""
+          Write-Host "Current Directory (pwd):"
+          pwsh -Command "pwd"
+          Write-Host ""
+          Write-Host "Listing workspace root:"
+          ls -la "${{ github.workspace }}"
 
-      - name: Build EXE with PyOxidizer
-        working-directory: ${{ github.workspace }}\..
-        run: |
-          pyoxidizer build --release
-          echo "Build output:"
-          dir build /s
-
-      - name: Locate final EXE
-        working-directory: ${{ github.workspace }}\..
+      - name: Show directory tree recursively (1 level)
         shell: pwsh
         run: |
-          $exe = Get-ChildItem -Recurse build\windows\x86_64\release\*.exe | Select-Object -First 1
-          if (-not $exe) { throw "Nenhum EXE gerado!" }
+          Write-Host "=== ROOT CONTENT (recursive) ==="
+          Get-ChildItem -Recurse -Depth 2 "${{ github.workspace }}" | Format-List
 
-          New-Item -ItemType Directory -Force -Path dist | Out-Null
-          $target = "dist/${{ env.APP_NAME }}-${{ env.APP_VER }}.exe"
-          Copy-Item $exe.FullName $target -Force
-          Write-Host "EXE Final: $target"
+      - name: Show full path to config files
+        shell: pwsh
+        run: |
+          Write-Host "=== LOOKING FOR OXIDIZER FILES ==="
+          Get-ChildItem -Recurse -Filter "oxidizer.bzl" -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "FOUND oxidizer.bzl:" $_.FullName
+          }
+          Get-ChildItem -Recurse -Filter "pyoxidizer.bzl" -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "FOUND pyoxidizer.bzl:" $_.FullName
+          }
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.APP_NAME }}-${{ env.APP_VER }}-win
-          path: dist/*.exe
+      - name: Check working-directory behaviors
+        shell: pwsh
+        run: |
+          Write-Host "=== TESTING working-directory ==="
+          Write-Host "---- workspace ----"
+          pwsh -Command "Set-Location '${{ github.workspace }}'; pwd; ls -la"
+          Write-Host "---- workspace/.. ----"
+          pwsh -Command "Set-Location '${{ github.workspace }}\..'; pwd; ls -la"
+          Write-Host "---- workspace/../.. ----"
+          pwsh -Command "Set-Location '${{ github.workspace }}\..\..'; pwd; ls -la"
 
-      - name: Publish Release
-        if: ${{ startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.publish_release) }}
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ env.APP_VER }}
-          files: dist/*.exe
-          generate_release_notes: true
+      - name: Test PyOxidizer lookup on each directory
+        shell: pwsh
+        run: |
+          Write-Host "=== TESTING pyoxidizer --config-file ==="
+
+          $dirs = @(
+            "${{ github.workspace }}",
+            "${{ github.workspace }}\..",
+            "${{ github.workspace }}\..\.."
+          )
+          
+          foreach ($d in $dirs) {
+            Write-Host ""
+            Write-Host "---- Trying directory: $d ----"
