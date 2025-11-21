@@ -6,26 +6,45 @@ on:
 jobs:
   debug:
     runs-on: windows-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
 
-      - name: Show workspace info (fixed)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Print workspace variables
         shell: pwsh
         run: |
-          Write-Host "=== GITHUB WORKSPACE ==="
+          Write-Host "=== github.workspace ==="
           Write-Host "${{ github.workspace }}"
           Write-Host ""
-          Write-Host "=== CURRENT DIRECTORY ==="
-          pwd
-          Write-Host ""
-          Write-Host "=== LISTING CURRENT DIR ==="
+
+      - name: List workspace root
+        working-directory: ${{ github.workspace }}
+        shell: pwsh
+        run: |
+          Write-Host "=== LISTING CURRENT DIRECTORY ==="
           Get-ChildItem -Force
           Write-Host ""
-          Write-Host "=== LISTING PARENT DIR ==="
-          Get-ChildItem -Force "${{ github.workspace }}\.."
+          Write-Host "=== FULL RECURSIVE TREE ==="
+          Get-ChildItem -Recurse -Force
+
+      - name: List parent directory
+        working-directory: ${{ github.workspace }}\..
+        shell: pwsh
+        run: |
+          Write-Host "=== LISTING PARENT DIRECTORY ==="
+          Get-ChildItem -Force
           Write-Host ""
-          Write-Host "=== LOOKING FOR *.bzl FILES ==="
-          Get-ChildItem -Recurse -Force -Filter "*.bzl" | ForEach-Object {
+          Write-Host "=== FULL RECURSIVE TREE OF PARENT ==="
+          Get-ChildItem -Recurse -Force
+
+      - name: Search for PyOxidizer config
+        working-directory: ${{ github.workspace }}\..
+        shell: pwsh
+        run: |
+          Write-Host "=== Searching for .bzl config files ==="
+          Get-ChildItem -Recurse -Filter "*.bzl" -Force | ForEach-Object {
             Write-Host "FOUND: $($_.FullName)"
           }
