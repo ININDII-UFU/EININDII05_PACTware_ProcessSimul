@@ -107,8 +107,7 @@ jobs:
 
           python -m nuitka `
             --standalone `
-            --enable-plugin=tk-inter `
-            --enable-plugin=tcl `
+            --enable-plugin=tk-inter
             --windows-icon-from-ico=assets/app.ico `
             --include-data-dir=db=db `
             --assume-yes-for-downloads `
