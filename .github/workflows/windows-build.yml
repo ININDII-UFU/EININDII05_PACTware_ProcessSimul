@@ -106,6 +106,7 @@ jobs:
           $name = "${{ env.APP_NAME }}-${{ env.APP_VER }}"
 
           python -m nuitka `
+            --onefile `
             --standalone `
             --enable-plugin=tk-inter `
             --windows-icon-from-ico=assets/app.ico `
