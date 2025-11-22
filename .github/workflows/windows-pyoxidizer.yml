@@ -1,0 +1,46 @@
+name: Windows EXE (PyOxidizer)
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install PyOxidizer
+        shell: pwsh
+        run: |
+          pip install pyoxidizer==0.25.0
+
+      - name: Build executable
+        shell: pwsh
+        run: |
+          pyoxidizer build --release --verbose
+
+      - name: List build output
+        run: Get-ChildItem -Recurse build
+
+      - name: Find final exe
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Recurse "build" -Filter "*.exe" | Select-Object -First 1
+          if (-not $exe) { throw "Nenhum EXE encontrado!" }
+          New-Item dist -ItemType Directory -Force | Out-Null
+          Copy-Item $exe.FullName "dist/ProcessSimul.exe"
+          Write-Host "EXE Final: dist/ProcessSimul.exe"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ProcessSimul
+          path: dist/ProcessSimul.exe
