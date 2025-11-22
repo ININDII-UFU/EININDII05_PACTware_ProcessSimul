@@ -1,46 +1,119 @@
 name: Windows EXE (PyOxidizer)
 
 on:
-  push:
-    branches: [main]
-    tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Tag da versão (ex.: v0.1.5)"
+        required: true
+        type: string
+      tag_repository:
+        description: "Criar tag automaticamente?"
+        required: true
+        default: true
+        type: boolean
+      publish_release:
+        description: "Publicar Release?"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write  # necessário para criar tags e releases
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
+      # ------------------------------------------------------------
+      # CHECKOUT
+      # ------------------------------------------------------------
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      # ------------------------------------------------------------
+      # COMPUTAR VERSÃO
+      # ------------------------------------------------------------
+      - name: Prepare version
+        shell: pwsh
+        run: |
+          $ver = "${{ inputs.version }}"
+          "APP_VER=$ver" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "Versão: $ver"
+
+      # ------------------------------------------------------------
+      # CRIAR TAG SE SOLICITADO
+      # ------------------------------------------------------------
+      - name: Create tag
+        if: ${{ inputs.tag_repository }}
+        shell: bash
+        run: |
+          set -e
+          VER="${{ env.APP_VER }}"
+
+          echo "Criando tag: $VER"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git tag -a "$VER" -m "Release $VER"
+          git push origin "$VER"
+
+      # ------------------------------------------------------------
+      # INSTALAR RUST
+      # ------------------------------------------------------------
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
+      # ------------------------------------------------------------
+      # INSTALAR PyOxidizer
+      # ------------------------------------------------------------
       - name: Install PyOxidizer
         shell: pwsh
         run: |
           pip install pyoxidizer==0.25.0
 
-      - name: Build executable
+      # ------------------------------------------------------------
+      # BUILD PyOxidizer
+      # ------------------------------------------------------------
+      - name: Build EXE
         shell: pwsh
         run: |
           pyoxidizer build --release --verbose
 
-      - name: List build output
-        run: Get-ChildItem -Recurse build
-
-      - name: Find final exe
+      # ------------------------------------------------------------
+      # BUSCAR EXE FINAL
+      # ------------------------------------------------------------
+      - name: Collect EXE
         shell: pwsh
         run: |
           $exe = Get-ChildItem -Recurse "build" -Filter "*.exe" | Select-Object -First 1
           if (-not $exe) { throw "Nenhum EXE encontrado!" }
-          New-Item dist -ItemType Directory -Force | Out-Null
-          Copy-Item $exe.FullName "dist/ProcessSimul.exe"
-          Write-Host "EXE Final: dist/ProcessSimul.exe"
 
+          New-Item dist -ItemType Directory -Force | Out-Null
+          $dest = "dist/ProcessSimul-${{ env.APP_VER }}.exe"
+          Copy-Item $exe.FullName $dest -Force
+
+          Write-Host "EXE Final: $dest"
+
+      # ------------------------------------------------------------
+      # ARTEFATO
+      # ------------------------------------------------------------
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ProcessSimul
-          path: dist/ProcessSimul.exe
+          name: ProcessSimul-${{ env.APP_VER }}
+          path: dist/*.exe
+
+      # ------------------------------------------------------------
+      # CRIAR RELEASE SE SOLICITADO
+      # ------------------------------------------------------------
+      - name: Publish GitHub Release
+        if: ${{ inputs.publish_release }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.APP_VER }}
+          files: dist/*.exe
+          generate_release_notes: true
