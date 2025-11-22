@@ -1,3 +1,26 @@
+name: Windows EXE (PyOxidizer)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Tag da versão (ex.: v0.1.5)"
+        required: true
+        type: string
+      tag_repository:
+        description: "Criar tag automaticamente?"
+        required: true
+        default: true
+        type: boolean
+      publish_release:
+        description: "Publicar Release?"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
