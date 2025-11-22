@@ -1,0 +1,31 @@
+!define APP_NAME "ProcessSimul"
+!define APP_VERSION "${APP_VER}"
+!define COMPANY "UFU-ININDII"
+!define INSTALL_DIR "$PROGRAMFILES32\${APP_NAME}"
+
+OutFile "setup_${APP_NAME}_${APP_VERSION}.exe"
+InstallDir "${INSTALL_DIR}"
+
+Page directory
+Page instfiles
+UninstPage uninstConfirm
+UninstPage instfiles
+
+Section "Install ${APP_NAME}"
+    SetOutPath "${INSTALL_DIR}"
+    File /r "dist\main.dist\*.*"
+
+    CreateDirectory "$SMPROGRAMS\${APP_NAME}"
+    CreateShortCut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" "${INSTALL_DIR}\${APP_NAME}.exe"
+
+    ; Opcional: atalho do desktop
+    ;CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "${INSTALL_DIR}\${APP_NAME}.exe"
+
+    WriteUninstaller "${INSTALL_DIR}\Uninstall.exe"
+SectionEnd
+
+Section "Uninstall"
+    Delete "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk"
+    RMDir "$SMPROGRAMS\${APP_NAME}"
+    RMDir /r "${INSTALL_DIR}"
+SectionEnd
