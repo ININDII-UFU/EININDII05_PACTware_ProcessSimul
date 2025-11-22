@@ -46,30 +46,49 @@ jobs:
       # ------------------------------------------------------------
       # DEBUG: LIST SOURCE TREE AND CHECK FILES
       #------------------------------------------------------------
-      - name: Check Project Structure
+      - name: Scan invalid filenames
         shell: pwsh
         run: |
-          Write-Host "===== CURRENT DIRECTORY ====="
-          Write-Host (Get-Location)
+          Write-Host "=== Checking for invalid Unicode filenames ==="
 
-          Write-Host "===== FULL TREE ====="
-          Get-ChildItem -Recurse | Select-Object FullName
+          $ErrorActionPreference = "Continue"
 
-          Write-Host "===== CHECK REQUIRED FILES ====="
+          Get-ChildItem -Recurse -Force |
+            Where-Object {
+              $_.Name -match "[^\x20-\x7E]" -or  # caracteres não ASCII
+              $_.Name -match "[\u200B-\u200F]" -or # zero width
+              $_.Name -match "[\u2026]" -or # reticências Unicode
+              $_.Name -match "[\u00A0-\u00FF]" # acentos
+            } |
+            Select-Object FullName
 
-          $files = @(
-            "main.py",
-            "assets/app.ico",
-            "db"
-          )
+      # ------------------------------------------------------------
+      # DEBUG: LIST SOURCE TREE AND CHECK FILES
+      #------------------------------------------------------------
+      # - name: Check Project Structure
+      #   shell: pwsh
+      #   run: |
+      #     Write-Host "===== CURRENT DIRECTORY ====="
+      #     Write-Host (Get-Location)
 
-          foreach ($f in $files) {
-            if (Test-Path $f) {
-              Write-Host "[OK] $f encontrado"
-            } else {
-              Write-Host "[ERRO] $f NÃO encontrado"
-            }
-          }
+      #     Write-Host "===== FULL TREE ====="
+      #     Get-ChildItem -Recurse | Select-Object FullName
+
+      #     Write-Host "===== CHECK REQUIRED FILES ====="
+
+      #     $files = @(
+      #       "main.py",
+      #       "assets/app.ico",
+      #       "db"
+      #     )
+
+      #     foreach ($f in $files) {
+      #       if (Test-Path $f) {
+      #         Write-Host "[OK] $f encontrado"
+      #       } else {
+      #         Write-Host "[ERRO] $f NÃO encontrado"
+      #       }
+      #     }
       # ------------------------------------------------------------
       # INSTALL PYTHON
       # ------------------------------------------------------------
