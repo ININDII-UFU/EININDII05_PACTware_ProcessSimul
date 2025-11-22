@@ -1,10 +1,10 @@
-name: Windows EXE (PyOxidizer)
+name: Windows EXE (PyOxidizer via Chocolatey)
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Versão (tag) ex.: v0.0.5"
+        description: "Versão (tag), ex.: v0.0.5"
         required: true
         type: string
       tag_repository:
@@ -35,7 +35,62 @@ jobs:
           fetch-depth: 0   # necessário para criar/push de tag
 
       # ------------------------------------------------------------
-      # PYTHON + DEPENDÊNCIAS (mesmo padrão do PyInstaller)
+      # DEFINIR APP_VER E APP_NAME
+      # ------------------------------------------------------------
+      - name: Compute version and names
+        shell: pwsh
+        run: |
+          # APP_VER
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $ver = "${{ inputs.version }}"
+          }
+          elseif ("${{ github.ref }}".StartsWith("refs/tags/")) {
+            $ver = "${{ github.ref_name }}"
+          }
+          else {
+            $ver = "dev-${{ github.run_number }}"
+          }
+          "APP_VER=$ver" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          # APP_NAME = nome do repositório
+          $repo = "${{ github.repository }}".Split("/")[1]
+          "APP_NAME=$repo" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          Write-Host "APP_VER = $ver"
+          Write-Host "APP_NAME = $repo"
+
+      # ------------------------------------------------------------
+      # CRIAR/PUSH TAG (OPCIONAL)
+      # ------------------------------------------------------------
+      - name: Create & push tag (manual dispatch)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_repository }}
+        shell: bash
+        run: |
+          set -e
+          VER="${APP_VER}"
+          echo "Versão definida: $VER"
+
+          # valida formato vX.Y.Z
+          if ! [[ "$VER" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]]; then
+            echo "Formato de versão inválido: $VER (esperado: vX.Y.Z)"
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # se a tag já existir localmente, não recria
+          if git rev-parse "$VER" >/dev/null 2>&1; then
+            echo "Tag $VER já existe localmente."
+          else
+            git tag -a "$VER" -m "Release $VER"
+          fi
+
+          # pode falhar se a tag já existir no remoto; só avisa e segue
+          git push origin "refs/tags/$VER" || echo "Tag já pode existir no remoto; seguindo..."
+
+      # ------------------------------------------------------------
+      # PYTHON + DEPENDÊNCIAS
       # ------------------------------------------------------------
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -48,105 +103,74 @@ jobs:
         shell: pwsh
         run: |
           python -m pip install --upgrade pip
-          if (Test-Path requirements.txt) { pip install -r requirements.txt }
-
-      # ------------------------------------------------------------
-      # VERSÃO E NOMES (APP_VER / APP_NAME) – MESMA LÓGICA DOS OUTROS
-      # ------------------------------------------------------------
-      - name: Compute version and names
-        shell: pwsh
-        run: |
-          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
-            $ver = "${{ inputs.version }}"
+          if (Test-Path requirements.txt) {
+            pip install -r requirements.txt
+          } else {
+            Write-Host "requirements.txt não encontrado, seguindo sem instalar deps."
           }
-          elseif ("${{ github.ref }}".StartsWith("refs/tags/")) {
-            $ver = "${{ github.ref_name }}"
-          }
-          else {
-            $ver = "dev-${{ github.run_number }}"
-          }
-          "APP_VER=$ver" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-          $repo = "${{ github.repository }}".Split("/")[1]
-          "APP_NAME=$repo" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      # (Opcional) cria e envia a tag quando disparado manualmente
-      - name: Create & push tag (manual dispatch)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_repository }}
-        shell: bash
-        run: |
-          set -e
-          VER="${{ env.APP_VER }}"
-          echo "Versão definida: $VER"
-
-          # valida formato vX.Y.Z
-          if ! [[ "$VER" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]]; then
-            echo "Formato de versão inválido: $VER (esperado: vX.Y.Z)"
-            exit 1
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Se a tag já existir localmente, não recria
-          if git rev-parse "$VER" >/dev/null 2>&1; then
-            echo "Tag $VER já existe localmente."
-          else
-            git tag -a "$VER" -m "Release $VER"
-          fi
-
-          # Pode falhar se a tag já existir no remoto; apenas avisa e segue
-          git push origin "refs/tags/$VER" || echo "Tag já pode existir no remoto; seguindo..."
 
       # ------------------------------------------------------------
-      # RUST + PYOXIDIZER
+      # INSTALAR RUST (PARA O BUILD DO APP PELO PYOXIDIZER)
       # ------------------------------------------------------------
-      # Ainda é bom ter Rust instalado (PyOxidizer usa em partes),
-      # mas não vamos compilar o PyOxidizer em si.
-      - name: Install Rust toolchain (for builds)
+      - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
-
-      - name: Install PyOxidizer (from PyPI wheels)
-        shell: pwsh
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade pyoxidizer
-
-      - name: Check PyOxidizer
-        shell: pwsh
-        run: |
-          Write-Host "PyOxidizer version:"
-          pyoxidizer --version
+        with:
+          toolchain: stable
 
       # ------------------------------------------------------------
-      # SANITY CHECK DO PROJETO (pyoxidizer.bzl + main.py)
+      # INSTALAR PYOXIDIZER VIA CHOCOLATEY
+      # ------------------------------------------------------------
+      - name: Install PyOxidizer via Chocolatey
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          choco install pyoxidizer --version=0.24.0 -y
+          Write-Host "PyOxidizer instalado via Chocolatey."
+
+      - name: Verify PyOxidizer installation
+        shell: pwsh
+        run: |
+          Write-Host "=== pyoxidizer --version ==="
+          pyoxidizer --version
+          Write-Host "=== where pyoxidizer ==="
+          where.exe pyoxidizer
+
+      # ------------------------------------------------------------
+      # CHECAGEM DE ESTRUTURA DO PROJETO
       # ------------------------------------------------------------
       - name: Check project structure
         shell: pwsh
         run: |
           Write-Host "===== CURRENT DIRECTORY ====="
-          Write-Host (Get-Location)
+          Get-Location
 
           Write-Host "===== ROOT TREE ====="
           Get-ChildItem -Force
 
-          Write-Host "===== REQUIRED FILES ====="
-          $files = @("pyoxidizer.bzl", "main.py")
-          foreach ($f in $files) {
-            if (Test-Path $f) {
-              Write-Host "[OK] $f encontrado"
+          $required = @("pyoxidizer.bzl", "main.py", "assets", "db")
+          foreach ($item in $required) {
+            if (Test-Path $item) {
+              Write-Host "[OK] $item encontrado"
             } else {
-              Write-Error "[ERRO] $f NÃO encontrado"
+              Write-Error "[ERRO] $item NÃO encontrado"
             }
           }
 
+          if (-not (Test-Path "assets/app.ico")) {
+            Write-Error "[ERRO] assets/app.ico NÃO encontrado"
+          }
+
+          if (-not (Test-Path "db/banco.db")) {
+            Write-Error "[ERRO] db/banco.db NÃO encontrado"
+          }
+
       # ------------------------------------------------------------
-      # BUILD COM LOG DETALHADO
+      # BUILD COM PYOXIDIZER
       # ------------------------------------------------------------
-      - name: Build EXE with PyOxidizer (trace log)
+      - name: Build EXE with PyOxidizer
         shell: pwsh
         run: |
-          Write-Host "=== Starting PyOxidizer build (trace) ==="
+          Write-Host "=== Starting PyOxidizer build (release) ==="
           pyoxidizer build --release --verbose *> pyoxidizer.log 2>&1
 
       - name: Show PyOxidizer log (tail)
@@ -166,29 +190,24 @@ jobs:
         with:
           name: pyoxidizer-log-${{ env.APP_VER }}
           path: pyoxidizer.log
-
-      # Se o build falhou, aborta aqui (pro release não continuar)
-      - name: Fail if build failed
-        if: failure()
-        shell: pwsh
-        run: |
-          Write-Error "PyOxidizer build falhou. Verifique o artefato pyoxidizer.log."
-          exit 1
+          if-no-files-found: warn
 
       # ------------------------------------------------------------
-      # COLETA E RENOMEIA O EXE (PADRÃO APP_NAME-APP_VER)
+      # COLETAR E RENOMEAR O EXE
       # ------------------------------------------------------------
       - name: Collect EXE
         if: success()
         shell: pwsh
         run: |
           $exe = Get-ChildItem -Recurse "build" -Filter "*.exe" | Select-Object -First 1
-          if (-not $exe) { throw "Nenhum EXE encontrado no diretório build!" }
+          if (-not $exe) {
+            throw "Nenhum .exe encontrado no diretório build!"
+          }
 
           New-Item dist -ItemType Directory -Force | Out-Null
           $dest = "dist/${{ env.APP_NAME }}-${{ env.APP_VER }}.exe"
           Copy-Item $exe.FullName $dest -Force
-          Write-Host "EXE Final gerado: $dest"
+          Write-Host "EXE Final: $dest"
 
       # ------------------------------------------------------------
       # ARTEFATO
@@ -202,12 +221,10 @@ jobs:
           if-no-files-found: error
 
       # ------------------------------------------------------------
-      # RELEASE
+      # RELEASE NO GITHUB (OPCIONAL)
       # ------------------------------------------------------------
-      # - quando for push de tag (se no futuro você adicionar gatilho de push)
-      # - OU quando for workflow_dispatch com publish_release=true
       - name: Publish GitHub Release
-        if: ${{ startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.publish_release) }}
+        if: ${{ inputs.publish_release }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.APP_VER }}
