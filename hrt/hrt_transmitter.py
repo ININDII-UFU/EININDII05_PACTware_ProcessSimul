@@ -8,7 +8,7 @@ from __future__ import annotations
 #
 # Observação: ReactVar.getValue é async no seu projeto — por isso NÃO usamos getValue aqui.
 
-from db.db_types import DBState
+from db_files.db_types import DBState
 from typing import Union
 
 try:

@@ -1,7 +1,7 @@
 import asyncio
 from .qt_compat import QObject, Signal, Slot
 import pandas as pd
-from db.db_storage import DBStorage
+from db_files.db_storage import DBStorage
 from react.react_var import ReactVar  # ajuste conforme seu pacote
 
 class ReactFactory(QObject):

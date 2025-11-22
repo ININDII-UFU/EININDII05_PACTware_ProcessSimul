@@ -36,7 +36,7 @@ import tkinter as tk
 from tkinter import ttk, simpledialog, messagebox
 
 # External project imports (keep same paths used in your project)
-from db.db_types import DBState, DBModel
+from db_files.db_types import DBState, DBModel
 from hrt.hrt_enum import hrt_enum
 from hrt.hrt_bitenum import hrt_bitEnum
 from hrt.hrt_type import str2type, type2str

@@ -1,7 +1,7 @@
 import asyncio
 from .qt_compat import QObject, Signal, Slot
 from hrt.hrt_type import hrt_type_hex_to, hrt_type_hex_from
-from db.db_types import DBState, DBModel
+from db_files.db_types import DBState, DBModel
 from asteval import Interpreter
 from numpy import exp, log
 import random

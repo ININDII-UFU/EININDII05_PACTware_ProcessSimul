@@ -21,7 +21,7 @@ import asyncio
 import tkinter as tk
 from tkinter import ttk, messagebox
 # --- project imports (expected to exist in your environment) ---
-from db.db_types import DBModel, DBState
+from db_files.db_types import DBModel, DBState
 from react.react_factory import ReactFactory
 from ctrl.simul_tf import SimulTf    # adjust path if different in your project
 from mb.mb_server import ModbusServer  # adjust path if different in your project
