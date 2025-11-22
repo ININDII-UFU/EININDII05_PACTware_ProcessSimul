@@ -126,17 +126,21 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "Procurando pyoxidizer.exe..."
-        $scripts = (python - << 'EOF'
-        import sys, os
-        print(os.path.join(os.path.dirname(sys.executable),"Scripts"))
-        EOF
-        ).Trim()
+
+        $python = Get-Command python | Select-Object -ExpandProperty Source
+        $pythonDir = Split-Path $python
+        $scripts = Join-Path $pythonDir "Scripts"
+
         Write-Host "Scripts: $scripts"
-        if (Test-Path "$scripts/pyoxidizer.exe") {
-          Write-Host ">> pyoxidizer.exe encontrado em $scripts"
+
+        if (Test-Path "$scripts\pyoxidizer.exe") {
+            Write-Host ">> pyoxidizer.exe encontrado em $scripts"
         } else {
-          Write-Host ">> Não encontrado no Scripts. Buscando no disco..."
-          Get-ChildItem -Path C:\ -Filter "pyoxidizer.exe" -Recurse -ErrorAction SilentlyContinue -Force -Depth 4 | Select-Object -First 10 FullName
+            Write-Host ">> pyoxidizer.exe NÃO encontrado no Scripts."
+            Write-Host ">> Buscando no disco..."
+
+            Get-ChildItem -Path C:\ -Filter "pyoxidizer.exe" -Recurse -ErrorAction SilentlyContinue -Force -Depth 4 |
+                Select-Object -First 10 FullName
         }
 
     # ------------------------------------------------------------
