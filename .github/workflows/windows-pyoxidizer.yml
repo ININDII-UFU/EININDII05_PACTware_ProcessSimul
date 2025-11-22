@@ -43,29 +43,33 @@ jobs:
           $ver = "${{ inputs.version }}"
           "APP_VER=$ver" | Out-File -FilePath $env:GITHUB_ENV -Append
           Write-Host "Versão definida: $ver"
-
       # ------------------------------------------------------------
-      # CREATE TAG IF REQUESTED
-      # ------------------------------------------------------------
-      - name: Create tag
-        if: ${{ inputs.tag_repository == true }}
-        shell: bash
+      # DEBUG: LIST SOURCE TREE AND CHECK FILES
+      #------------------------------------------------------------
+      - name: List source tree
+        shell: pwsh
         run: |
-          set -e
-          VER="${{ env.APP_VER }}"
+          Write-Host "---- Current Directory ----"
+          Write-Host (Get-Location)
 
-          echo "Criando tag: $VER"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          Write-Host "---- Full Directory Tree ----"
+          Get-ChildItem -Recurse | Select-Object FullName
 
-          # Evitar falhar caso a tag já exista
-          if git rev-parse "$VER" >/dev/null 2>&1; then
-            echo "Tag já existe. Pulando criação."
-          else
-            git tag -a "$VER" -m "Release $VER"
-            git push origin "$VER"
-          fi
+          Write-Host "---- Checking Required Files ----"
 
+          $files = @(
+            "main.py",
+            "assets/app.ico",
+            "db"
+          )
+
+          foreach ($f in $files) {
+            if (Test-Path $f) {
+              Write-Host "[OK] Encontrado: $f"
+            } else {
+              Write-Host "[ERRO] NÃO encontrado: $f"
+            }
+          }
       # ------------------------------------------------------------
       # INSTALL PYTHON
       # ------------------------------------------------------------
@@ -98,7 +102,27 @@ jobs:
           # PyOxidizer 0.24 recomenda:
           #   pyoxidizer build
           pyoxidizer build --release
+      # ------------------------------------------------------------
+      # CREATE TAG IF REQUESTED
+      # ------------------------------------------------------------
+      - name: Create tag
+        if: ${{ inputs.tag_repository == true }}
+        shell: bash
+        run: |
+          set -e
+          VER="${{ env.APP_VER }}"
 
+          echo "Criando tag: $VER"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Evitar falhar caso a tag já exista
+          if git rev-parse "$VER" >/dev/null 2>&1; then
+            echo "Tag já existe. Pulando criação."
+          else
+            git tag -a "$VER" -m "Release $VER"
+            git push origin "$VER"
+          fi
       # ------------------------------------------------------------
       # COLLECT OUTPUT BINARY
       # ------------------------------------------------------------
