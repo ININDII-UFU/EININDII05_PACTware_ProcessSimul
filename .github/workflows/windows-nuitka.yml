@@ -1,9 +1,6 @@
 name: Windows EXE (Nuitka)
 
 on:
-  push:
-    branches: [ main, master ]
-    tags: [ 'v*' ]
   workflow_dispatch:
     inputs:
       version:

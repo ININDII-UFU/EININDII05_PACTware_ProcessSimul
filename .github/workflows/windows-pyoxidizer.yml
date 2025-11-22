@@ -73,7 +73,7 @@ jobs:
       - name: Install PyOxidizer
         shell: pwsh
         run: |
-          pip install pyoxidizer==0.25.0
+          pip install pyoxidizer==0.24.0
 
       # ------------------------------------------------------------
       # BUILD PyOxidizer
