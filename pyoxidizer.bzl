@@ -20,6 +20,11 @@ exclude = [
     "**/*.doc",
     "**/*.docx",
     "**/*.slx",
+    "**/*.txt",
+    "**/*.csv",
+    "hrt/old/**",
+    "doc/**",
+    "assets/Imagem*",
 ]
 
 def make_exe():
