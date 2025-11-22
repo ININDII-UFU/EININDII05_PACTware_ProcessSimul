@@ -1,10 +1,10 @@
-name: Windows EXE (PyOxidizer via Chocolatey)
+name: Windows EXE (PyOxidizer via pip)
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Versão (tag), ex.: v0.0.5"
+        description: "Versão (tag), ex.: v0.1.4"
         required: true
         type: string
       tag_repository:
@@ -32,7 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # necessário para criar/push de tag
+          fetch-depth: 0
 
       # ------------------------------------------------------------
       # DEFINIR APP_VER E APP_NAME
@@ -40,7 +40,6 @@ jobs:
       - name: Compute version and names
         shell: pwsh
         run: |
-          # APP_VER
           if ("${{ github.event_name }}" -eq "workflow_dispatch") {
             $ver = "${{ inputs.version }}"
           }
@@ -50,9 +49,8 @@ jobs:
           else {
             $ver = "dev-${{ github.run_number }}"
           }
-          "APP_VER=$ver" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "APP_VER=$ver"  | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-          # APP_NAME = nome do repositório
           $repo = "${{ github.repository }}".Split("/")[1]
           "APP_NAME=$repo" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
@@ -70,7 +68,6 @@ jobs:
           VER="${APP_VER}"
           echo "Versão definida: $VER"
 
-          # valida formato vX.Y.Z
           if ! [[ "$VER" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]]; then
             echo "Formato de versão inválido: $VER (esperado: vX.Y.Z)"
             exit 1
@@ -79,14 +76,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # se a tag já existir localmente, não recria
           if git rev-parse "$VER" >/dev/null 2>&1; then
             echo "Tag $VER já existe localmente."
           else
             git tag -a "$VER" -m "Release $VER"
           fi
 
-          # pode falhar se a tag já existir no remoto; só avisa e segue
           git push origin "refs/tags/$VER" || echo "Tag já pode existir no remoto; seguindo..."
 
       # ------------------------------------------------------------
@@ -106,11 +101,11 @@ jobs:
           if (Test-Path requirements.txt) {
             pip install -r requirements.txt
           } else {
-            Write-Host "requirements.txt não encontrado, seguindo sem instalar deps."
+            Write-Host "requirements.txt não encontrado, seguindo."
           }
 
       # ------------------------------------------------------------
-      # INSTALAR RUST (PARA O BUILD DO APP PELO PYOXIDIZER)
+      # INSTALAR RUST (PARA O BUILD DOS BINÁRIOS DO PYOXIDIZER)
       # ------------------------------------------------------------
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -118,22 +113,44 @@ jobs:
           toolchain: stable
 
       # ------------------------------------------------------------
-      # INSTALAR PYOXIDIZER VIA CHOCOLATEY
+      # INSTALAR PYOXIDIZER VIA PIP + DEBUG DA INSTALAÇÃO
       # ------------------------------------------------------------
-      - name: Install PyOxidizer via Chocolatey
+      - name: Install PyOxidizer via pip
         shell: pwsh
         run: |
-          Set-ExecutionPolicy Bypass -Scope Process -Force
-          choco install pyoxidizer --version=0.24.0 -y
-          Write-Host "PyOxidizer instalado via Chocolatey."
+          Write-Host "=== pip install pyoxidizer ==="
+          python -m pip install "pyoxidizer==0.24.0"
 
-      - name: Verify PyOxidizer installation
+          Write-Host "=== pip show pyoxidizer ==="
+          python -m pip show pyoxidizer
+
+          Write-Host "=== python -m pyoxidizer --version ==="
+          python -m pyoxidizer --version
+
+      - name: Diagnose PyOxidizer CLI (onde está o .exe?)
         shell: pwsh
         run: |
-          Write-Host "=== pyoxidizer --version ==="
-          pyoxidizer --version
-          Write-Host "=== where pyoxidizer ==="
-          where.exe pyoxidizer
+          Write-Host "=== PATH ==="
+          Write-Host $env:Path
+
+          Write-Host "=== Descobrindo Scripts do Python ==="
+          $scriptsDir = python - << 'EOF'
+          import sys, os
+          print(os.path.join(os.path.dirname(sys.executable), "Scripts"))
+          EOF
+          $scriptsDir = $scriptsDir.Trim()
+          Write-Host "Python Scripts dir: $scriptsDir"
+
+          if (Test-Path "$scriptsDir\\pyoxidizer.exe") {
+            Write-Host "Encontrado pyoxidizer.exe em:"
+            Get-Item "$scriptsDir\\pyoxidizer.exe"
+          } else {
+            Write-Host "pyoxidizer.exe NÃO encontrado no Scripts dir."
+          }
+
+          Write-Host "=== Busca ampla por pyoxidizer.exe em C:\\ (limite 20) ==="
+          Get-ChildItem -Path C:\ -Filter "pyoxidizer.exe" -Recurse -ErrorAction SilentlyContinue |
+            Select-Object FullName -First 20
 
       # ------------------------------------------------------------
       # CHECAGEM DE ESTRUTURA DO PROJETO
@@ -165,13 +182,15 @@ jobs:
           }
 
       # ------------------------------------------------------------
-      # BUILD COM PYOXIDIZER
+      # BUILD COM PYOXIDIZER (USANDO python -m pyoxidizer)
       # ------------------------------------------------------------
       - name: Build EXE with PyOxidizer
         shell: pwsh
+        env:
+          PYOXIDIZER_SYSTEM_RUST: "1"
         run: |
-          Write-Host "=== Starting PyOxidizer build (release) ==="
-          pyoxidizer build --release --verbose *> pyoxidizer.log 2>&1
+          Write-Host "=== Iniciando build (python -m pyoxidizer build --release --verbose) ==="
+          python -m pyoxidizer build --release --verbose *> pyoxidizer.log 2>&1
 
       - name: Show PyOxidizer log (tail)
         if: always()
@@ -209,9 +228,6 @@ jobs:
           Copy-Item $exe.FullName $dest -Force
           Write-Host "EXE Final: $dest"
 
-      # ------------------------------------------------------------
-      # ARTEFATO
-      # ------------------------------------------------------------
       - name: Upload artifact (.exe)
         if: success()
         uses: actions/upload-artifact@v4
