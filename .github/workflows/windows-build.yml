@@ -99,6 +99,7 @@ jobs:
 
       # ------------------------------------------------------------
       # BUILD NUITKA (STANDALONE, SEM ONEFILE)
+      # --windows-disable-console `
       # ------------------------------------------------------------
       - name: Build EXE with Nuitka (Standalone)
         shell: pwsh
@@ -114,7 +115,7 @@ jobs:
             --assume-yes-for-downloads `
             --remove-output `
             --output-dir=dist `
-            --windows-console-mode=force `
+            --windows-disable-console `
             main.py
 
           Write-Host "Conteúdo de dist/:"
