@@ -6,44 +6,13 @@ load("pyoxidizer",
      "Resource",
 )
 
-def check_file(path):
-    try:
-        open(path)
-        print(f"[OK] Arquivo encontrado: {path}")
-        return True
-    except Exception as e:
-        print(f"[ERRO] Arquivo NÃO encontrado: {path}")
-        print(f"Motivo: {e}")
-        return False
-
-def check_dir(path):
-    import os
-    if os.path.isdir(path):
-        print(f"[OK] Diretório encontrado: {path}")
-        print(f"Conteúdo:")
-        for root, dirs, files in os.walk(path):
-            for f in files:
-                print(" -", os.path.join(root, f))
-        return True
-    else:
-        print(f"[ERRO] Diretório NÃO encontrado: {path}")
-        return False
-
 def make_exe():
-    print("===== DEBUG PyOxidizer =====")
-    import os
-    print("Diretório atual:", os.getcwd())
-    print("Conteúdo raiz:")
-    for x in os.listdir("."):
-        print(" -", x)
-    print("============================")
+    print("===== DEBUG PyOxidizer (Starlark Safe) =====")
+    print("Verificando arquivos esperados...")
 
-    # -------------------------------------------
-    # Checagem explícita dos arquivos críticos
-    # -------------------------------------------
-    check_file("main.py")
-    check_file("assets/app.ico")
-    check_dir("db")
+    print("Existe main.py? ->", project_path_exists("main.py"))
+    print("Existe assets/app.ico? ->", project_path_exists("assets/app.ico"))
+    print("Existe diretório db/? ->", project_path_exists("db"))
 
     dist = default_python_distribution(
         python_version = "3.10",
@@ -51,11 +20,7 @@ def make_exe():
     )
 
     manifest = FileManifest()
-    try:
-        manifest.add_directory("db", "db")
-        print("[OK] Manifesto da pasta 'db' adicionado.")
-    except Exception as e:
-        print("[ERRO] Falha ao adicionar pasta 'db':", e)
+    manifest.add_directory("db", "db")
 
     exe = PythonExecutable(
         dist = dist,
@@ -69,7 +34,6 @@ def make_exe():
         include_resources_in_executable = True,
     )
 
-    print("[OK] PythonExecutable criado com sucesso.")
     return exe
 
 def make_dist():
