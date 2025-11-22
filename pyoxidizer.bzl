@@ -6,17 +6,27 @@ load("pyoxidizer",
      "Resource",
 )
 
+exclude = [
+    "**/*.jpg",
+    "**/*.png",
+    "**/*.jpeg",
+    "**/*.bmp",
+    "**/*.gif",
+    "**/*.svg",
+    "**/*.xls",
+    "**/*.xlsx",
+    "**/*.xlsm",
+    "**/*.pdf",
+    "**/*.doc",
+    "**/*.docx",
+    "**/*.slx",
+]
+
 def make_exe():
-    print("===== DEBUG PyOxidizer (Starlark Safe) =====")
-    print("Verificando arquivos esperados...")
-
-    print("Existe main.py? ->", project_path_exists("main.py"))
-    print("Existe assets/app.ico? ->", project_path_exists("assets/app.ico"))
-    print("Existe diretório db/? ->", project_path_exists("db"))
-
     dist = default_python_distribution(
         python_version = "3.10",
         flavor = "standalone_dynamic",
+        source_exclude = exclude,
     )
 
     manifest = FileManifest()
@@ -37,5 +47,4 @@ def make_exe():
     return exe
 
 def make_dist():
-    print("Gerando distribuição final...")
     return make_exe().to_dist()
