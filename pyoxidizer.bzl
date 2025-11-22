@@ -6,34 +6,15 @@ load("pyoxidizer",
      "Resource",
 )
 
-exclude = [
-    "**/*.jpg",
-    "**/*.png",
-    "**/*.jpeg",
-    "**/*.bmp",
-    "**/*.gif",
-    "**/*.svg",
-    "**/*.xls",
-    "**/*.xlsx",
-    "**/*.xlsm",
-    "**/*.pdf",
-    "**/*.doc",
-    "**/*.docx",
-    "**/*.slx",
-    "**/*.txt",
-    "**/*.csv",
-    "hrt/old/**",
-    "doc/**",
-    "assets/Imagem*",
-]
-
 def make_exe():
+    # DISTRIBUIÇÃO PYTHON SEM ESCANEAR ARQUIVOS DO REPO
     dist = default_python_distribution(
         python_version = "3.10",
         flavor = "standalone_dynamic",
-        source_exclude = exclude,
+        raw_python_only = True,   # <<<<<< 🔥 A LINHA QUE RESOLVE TUDO
     )
 
+    # SOMENTE INCLUIMOS O DB MANUALMENTE
     manifest = FileManifest()
     manifest.add_directory("db", "db")
 
