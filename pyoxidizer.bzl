@@ -3,12 +3,12 @@ load(
     "default_python_distribution",
     "default_target_triple",
     "PythonExecutable",
-    "FileManifest",
     "FileContent",
 )
 
 def make_exe():
-    # Distribuição mínima: só Python, sem scan automático de projeto
+    # Distribuição padrão do PyOxidizer com Python 3.10,
+    # flavor dinâmico (suporta tkinter em Windows).
     dist = default_python_distribution(
         python_version = "3.10",
         flavor = "standalone_dynamic",
@@ -20,32 +20,28 @@ def make_exe():
         name = "ProcessSimul",
         module_path = "main.py",
         target_triple = default_target_triple(),
-        # agora usando o ícone real do projeto
-        icon_path = "assets/app.ico",
+        icon_path = "assets/app.ico",   # ícone do seu projeto
     )
+
+    # Ativa suporte ao tkinter: instala os arquivos tcl
+    # na pasta "tcl" ao lado do executável e configura
+    # automaticamente TCL_LIBRARY em runtime.
+    # (conforme docs oficiais do PyOxidizer para tkinter)
+    exe.tcl_files_path = "tcl"
 
     return exe
 
 
 def make_dist():
-    # Executável embutindo o Python
-    exe = make_exe()
+    # Constrói a distribuição a partir do executável configurado
+    dist = make_exe().to_dist()
 
-    # Layout final de arquivos ao lado do .exe
-    files = FileManifest()
-
-    # Coloca o executável na raiz do diretório de build
-    # (nome e path são gerenciados pelo PyOxidizer)
-    files.add_python_resource(".", exe)
-
-    # Adiciona o arquivo de banco de dados em "db/banco.db"
-    # ao lado do executável (mesma estrutura do seu repo)
-    files.add_file(
+    # Garante que o arquivo do banco de dados esteja presente
+    # em "db/banco.db" na pasta final de distribuição,
+    # igual ao layout do seu repositório.
+    dist.add_file(
         FileContent(path = "db/banco.db"),
         path = "db/banco.db",
     )
 
-    # Se no futuro quiser levar mais coisas (ex.: toda a pasta db_files),
-    # é só adicionar novos FileContent/add_file aqui.
-
-    return files
+    return dist

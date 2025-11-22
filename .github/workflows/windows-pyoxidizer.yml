@@ -101,31 +101,22 @@ jobs:
       # ------------------------------------------------------------
       # RUST + PYOXIDIZER
       # ------------------------------------------------------------
-      - name: Install Rust
+      # Ainda é bom ter Rust instalado (PyOxidizer usa em partes),
+      # mas não vamos compilar o PyOxidizer em si.
+      - name: Install Rust toolchain (for builds)
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Check Rust toolchain
+      - name: Install PyOxidizer (from PyPI wheels)
         shell: pwsh
         run: |
-          Write-Host "=== Rust / Cargo sanity check ==="
-          rustc -V
-          cargo -V
-          Write-Host "where cargo:"
-          where.exe cargo
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade pyoxidizer
 
-      - name: Install PyOxidizer via cargo
+      - name: Check PyOxidizer
         shell: pwsh
         run: |
-          cargo install pyoxidizer --version 0.24.0
-          echo "CARGO_HOME=$env:CARGO_HOME"
-          $env:Path += ";$env:CARGO_HOME\bin"
-
-      - name: Check PyOxidizer binary
-        shell: pwsh
-        run: |
-          Write-Host "Testing pyoxidizer..."
+          Write-Host "PyOxidizer version:"
           pyoxidizer --version
-          where.exe pyoxidizer
 
       # ------------------------------------------------------------
       # SANITY CHECK DO PROJETO (pyoxidizer.bzl + main.py)
