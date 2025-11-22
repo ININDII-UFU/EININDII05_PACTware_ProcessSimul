@@ -81,7 +81,7 @@ jobs:
           Write-Host "PyOxidizer version:"
           pyoxidizer --version
 
-      - name: Debug: Check project structure
+      - name: Check project structure
         shell: pwsh
         run: |
           Write-Host "===== CURRENT DIRECTORY ====="
