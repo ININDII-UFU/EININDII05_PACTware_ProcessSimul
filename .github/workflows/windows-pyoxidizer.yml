@@ -73,13 +73,19 @@ jobs:
           Write-Host "where cargo:"
           where.exe cargo
 
-      - name: Install PyOxidizer
+      - name: Install PyOxidizer via cargo
         shell: pwsh
         run: |
-          pip install --upgrade pip
-          pip install pyoxidizer==0.24.0
-          Write-Host "PyOxidizer version:"
+          cargo install pyoxidizer --version 0.24.0
+          echo "CARGO_HOME=$env:CARGO_HOME"
+          $env:Path += ";$env:CARGO_HOME\bin"
+
+      - name: Check PyOxidizer binary
+        shell: pwsh
+        run: |
+          Write-Host "Testing pyoxidizer..."
           pyoxidizer --version
+          where.exe pyoxidizer
 
       - name: Check project structure
         shell: pwsh
