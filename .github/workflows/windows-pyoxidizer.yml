@@ -1,151 +1,121 @@
-name: Windows EXE (PyOxidizer)
-
-on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Tag da versão (ex.: v0.1.5)"
-        required: true
-        type: string
-      tag_repository:
-        description: "Criar tag automaticamente?"
-        required: true
-        default: true
-        type: boolean
-      publish_release:
-        description: "Publicar Release?"
-        required: true
-        default: true
-        type: boolean
-
-permissions:
-  contents: write
-
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      # ------------------------------------------------------------
-      # CHECKOUT
-      # ------------------------------------------------------------
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # ------------------------------------------------------------
-      # PREPARE VERSION
-      # ------------------------------------------------------------
       - name: Prepare version
         shell: pwsh
         run: |
           $ver = "${{ inputs.version }}"
           "APP_VER=$ver" | Out-File -FilePath $env:GITHUB_ENV -Append
           Write-Host "Versão definida: $ver"
-      # ------------------------------------------------------------
-      # DEBUG: LIST SOURCE TREE AND CHECK FILES
-      #------------------------------------------------------------
-      - name: Scan invalid filenames
-        shell: pwsh
-        run: |
-          Write-Host "=== Checking for invalid Unicode filenames ==="
 
-          $ErrorActionPreference = "Continue"
-
-          Get-ChildItem -Recurse -Force |
-            Where-Object {
-              $_.Name -match "[^\x20-\x7E]" -or  # caracteres não ASCII
-              $_.Name -match "[\u200B-\u200F]" -or # zero width
-              $_.Name -match "[\u2026]" -or # reticências Unicode
-              $_.Name -match "[\u00A0-\u00FF]" # acentos
-            } |
-            Select-Object FullName
-
-      # ------------------------------------------------------------
-      # DEBUG: LIST SOURCE TREE AND CHECK FILES
-      #------------------------------------------------------------
-      # - name: Check Project Structure
-      #   shell: pwsh
-      #   run: |
-      #     Write-Host "===== CURRENT DIRECTORY ====="
-      #     Write-Host (Get-Location)
-
-      #     Write-Host "===== FULL TREE ====="
-      #     Get-ChildItem -Recurse | Select-Object FullName
-
-      #     Write-Host "===== CHECK REQUIRED FILES ====="
-
-      #     $files = @(
-      #       "main.py",
-      #       "assets/app.ico",
-      #       "db"
-      #     )
-
-      #     foreach ($f in $files) {
-      #       if (Test-Path $f) {
-      #         Write-Host "[OK] $f encontrado"
-      #       } else {
-      #         Write-Host "[ERRO] $f NÃO encontrado"
-      #       }
-      #     }
-      # ------------------------------------------------------------
-      # INSTALL PYTHON
-      # ------------------------------------------------------------
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      # ------------------------------------------------------------
-      # INSTALL RUST
-      # ------------------------------------------------------------
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      # ------------------------------------------------------------
-      # INSTALL PyOxidizer
-      # ------------------------------------------------------------
-      - name: Install PyOxidizer
-        shell: pwsh
-        run: |
-          pip install --upgrade pip
-          pip install pyoxidizer==0.24.0
-
-      # ------------------------------------------------------------
-      # BUILD EXE WITH PyOXIDIZER
-      # ------------------------------------------------------------
-      - name: Build EXE
-        shell: pwsh
-        run: |
-          # PyOxidizer 0.24 recomenda:
-          #   pyoxidizer build
-          pyoxidizer build --release
-      # ------------------------------------------------------------
-      # CREATE TAG IF REQUESTED
-      # ------------------------------------------------------------
       - name: Create tag
         if: ${{ inputs.tag_repository == true }}
         shell: bash
         run: |
           set -e
           VER="${{ env.APP_VER }}"
-
           echo "Criando tag: $VER"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Evitar falhar caso a tag já exista
           if git rev-parse "$VER" >/dev/null 2>&1; then
             echo "Tag já existe. Pulando criação."
           else
             git tag -a "$VER" -m "Release $VER"
             git push origin "$VER"
           fi
-      # ------------------------------------------------------------
-      # COLLECT OUTPUT BINARY
-      # ------------------------------------------------------------
+
+      - name: Install Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      # Aqui eu vou reforçar Rust e garantir que cargo está OK
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Check Rust toolchain
+        shell: pwsh
+        run: |
+          Write-Host "=== Rust / Cargo sanity check ==="
+          rustc -V
+          cargo -V
+          Write-Host "where cargo:"
+          where.exe cargo
+
+      - name: Install PyOxidizer
+        shell: pwsh
+        run: |
+          pip install --upgrade pip
+          pip install pyoxidizer==0.24.0
+          Write-Host "PyOxidizer version:"
+          pyoxidizer --version
+
+      - name: Debug: Check project structure
+        shell: pwsh
+        run: |
+          Write-Host "===== CURRENT DIRECTORY ====="
+          Write-Host (Get-Location)
+
+          Write-Host "===== ROOT TREE ====="
+          Get-ChildItem -Force
+
+          Write-Host "===== REQUIRED FILES ====="
+          $files = @("pyoxidizer.bzl", "main.py")
+          foreach ($f in $files) {
+            if (Test-Path $f) {
+              Write-Host "[OK] $f encontrado"
+            } else {
+              Write-Host "[ERRO] $f NÃO encontrado"
+            }
+          }
+
+      # Build com log detalhado salvo em arquivo
+      - name: Build EXE with PyOxidizer (trace log)
+        shell: pwsh
+        run: |
+          Write-Host "=== Starting PyOxidizer build (trace) ==="
+          # Alguns builds aceitam --log-level trace, outros usam -vv
+          # Vamos tentar o mais verboso:
+          pyoxidizer build --release --verbose *>& pyoxidizer.log
+        continue-on-error: true
+
+      - name: Show PyOxidizer log (tail)
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "=== Last 200 lines of pyoxidizer.log ==="
+          if (Test-Path pyoxidizer.log) {
+            Get-Content pyoxidizer.log -Tail 200
+          } else {
+            Write-Host "pyoxidizer.log não encontrado."
+          }
+
+      - name: Upload PyOxidizer log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pyoxidizer-log-${{ env.APP_VER }}
+          path: pyoxidizer.log
+
+      # Se o build falhou, aborta aqui (pro release não continuar)
+      - name: Fail if build failed
+        if: failure()
+        shell: pwsh
+        run: |
+          Write-Error "PyOxidizer build falhou. Verifique o artefato pyoxidizer.log."
+          exit 1
+
+      # Coleta EXE (só roda se build tiver passado)
       - name: Collect EXE
+        if: success()
         shell: pwsh
         run: |
           $exe = Get-ChildItem -Recurse "build" -Filter "*.exe" | Select-Object -First 1
@@ -153,25 +123,18 @@ jobs:
 
           New-Item dist -ItemType Directory -Force | Out-Null
           $dest = "dist/ProcessSimul-${{ env.APP_VER }}.exe"
-
           Copy-Item $exe.FullName $dest -Force
-
           Write-Host "EXE Final gerado: $dest"
 
-      # ------------------------------------------------------------
-      # UPLOAD ARTIFACT
-      # ------------------------------------------------------------
       - name: Upload artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: ProcessSimul-${{ env.APP_VER }}
           path: dist/*.exe
 
-      # ------------------------------------------------------------
-      # PUBLISH RELEASE IF REQUESTED
-      # ------------------------------------------------------------
       - name: Publish GitHub Release
-        if: ${{ inputs.publish_release == true }}
+        if: ${{ success() && inputs.publish_release == true }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.APP_VER }}

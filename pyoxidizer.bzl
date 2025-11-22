@@ -1,33 +1,25 @@
-load("pyoxidizer",
-     "default_python_distribution",
-     "default_target_triple",
-     "PythonExecutable",
-     "FileManifest",
-     "Resource",
+load(
+    "pyoxidizer",
+    "default_python_distribution",
+    "default_target_triple",
+    "PythonExecutable",
 )
 
 def make_exe():
-    # DISTRIBUIÇÃO PYTHON SEM ESCANEAR ARQUIVOS DO REPO
+    # Distribuição mínima: só Python, nada de scan bizarro de projeto
     dist = default_python_distribution(
         python_version = "3.10",
         flavor = "standalone_dynamic",
-        raw_python_only = True,   # <<<<<< 🔥 A LINHA QUE RESOLVE TUDO
+        raw_python_only = True,
     )
-
-    # SOMENTE INCLUIMOS O DB MANUALMENTE
-    manifest = FileManifest()
-    manifest.add_directory("db", "db")
 
     exe = PythonExecutable(
         dist = dist,
         name = "ProcessSimul",
         module_path = "main.py",
         target_triple = default_target_triple(),
-        icon_path = "assets/app.ico",
-        resources = [
-            Resource("db", manifest),
-        ],
-        include_resources_in_executable = True,
+        # testa sem ícone para eliminar mais uma variável
+        icon_path = None,
     )
 
     return exe
