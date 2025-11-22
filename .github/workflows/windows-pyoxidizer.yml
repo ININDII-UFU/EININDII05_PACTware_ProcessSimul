@@ -105,10 +105,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "=== Starting PyOxidizer build (trace) ==="
-          # Alguns builds aceitam --log-level trace, outros usam -vv
-          # Vamos tentar o mais verboso:
-          pyoxidizer build --release --verbose *>& pyoxidizer.log
-        continue-on-error: true
+          pyoxidizer build --release --verbose *> pyoxidizer.log 2>&1
 
       - name: Show PyOxidizer log (tail)
         if: always()
