@@ -118,23 +118,40 @@ jobs:
       # ------------------------------------------------------------
       # INSTALAR NSIS E GERAR O INSTALADOR
       # ------------------------------------------------------------
+      # ------------------------------------------------------------
+      # INSTALAR NSIS
+      # ------------------------------------------------------------
       - name: Install NSIS
-        run: choco install nsis -y
-
-      - name: Prepare installer
         shell: pwsh
         run: |
-          Copy-Item installer/installer.nsi installer.nsi
-          (Get-Content installer.nsi) `
-            -replace '\$\{APP_VER\}', '${{ env.APP_VER }}' |
-            Set-Content installer.nsi
+          choco install nsis -y
 
+          $nsis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+          if (Test-Path $nsis) {
+            Write-Host "NSIS instalado em: $nsis"
+          } else {
+            Write-Error "NSIS NÃO encontrado em $nsis após instalação."
+            exit 1
+          }
+
+      # ------------------------------------------------------------
+      # GERAR INSTALADOR COM NSIS
+      # ------------------------------------------------------------
       - name: Build Installer (NSIS)
         shell: pwsh
         run: |
-          makensis installer.nsi
+          $nsis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+
+          if (!(Test-Path $nsis)) {
+            throw "NSIS não encontrado em $nsis. Verifique o step de instalação."
+          }
+
+          # se o installer.nsi estiver na raiz do repo:
+          & $nsis installer\installer.nsi
+
           Write-Host "Arquivos gerados:"
           Get-ChildItem . -Filter "setup_*.exe"
+
 
       # ------------------------------------------------------------
       # ARTEFATO
