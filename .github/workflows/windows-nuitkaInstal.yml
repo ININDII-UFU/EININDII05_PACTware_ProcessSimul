@@ -9,12 +9,10 @@ on:
         type: string
       tag_repository:
         description: "Criar e enviar tag?"
-        required: true
         default: true
         type: boolean
       publish_release:
         description: "Publicar Release?"
-        required: true
         default: true
         type: boolean
 
@@ -26,149 +24,172 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # ------------------------------------------------------------
-      # CHECKOUT
-      # ------------------------------------------------------------
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      # ------------------------------------------------------------
-      # TAG (OPCIONAL)
-      # ------------------------------------------------------------
-      - name: Compute version and names
-        shell: pwsh
-        run: |
-          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
-            $ver = "${{ inputs.version }}"
-          }
-          elseif ("${{ github.ref }}".StartsWith("refs/tags/")) {
-            $ver = "${{ github.ref_name }}"
-          }
-          else {
-            $ver = "dev-${{ github.run_number }}"
-          }
+    # ------------------------------------------------------------
+    # CHECKOUT
+    # ------------------------------------------------------------
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-          "APP_VER=$ver" | Out-File $env:GITHUB_ENV -Append
-          "APP_NAME=ProcessSimul" | Out-File $env:GITHUB_ENV -Append
+    # ------------------------------------------------------------
+    # DEFINIR VERSÃO
+    # ------------------------------------------------------------
+    - name: Compute version and names
+      shell: pwsh
+      run: |
+        if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+          $ver = "${{ inputs.version }}"
+        }
+        elseif ("${{ github.ref }}".StartsWith("refs/tags/")) {
+          $ver = "${{ github.ref_name }}"
+        }
+        else {
+          $ver = "dev-${{ github.run_number }}"
+        }
 
-          Write-Host "APP_VER=$ver | APP_NAME=ProcessSimul"
+        "APP_VER=$ver" | Out-File $env:GITHUB_ENV -Append
+        "APP_NAME=ProcessSimul" | Out-File $env:GITHUB_ENV -Append
 
-      - name: Create & push tag
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_repository }}
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "${APP_VER}" -m "Release ${APP_VER}" || true
-          git push origin "${APP_VER}" || true
+        Write-Host "=== Versão definida: $ver"
+        Write-Host "=== Nome do app: ProcessSimul"
 
-      # ------------------------------------------------------------
-      # PYTHON
-      # ------------------------------------------------------------
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+    # ------------------------------------------------------------
+    # CRIAR TAG
+    # ------------------------------------------------------------
+    - name: Create & push tag
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_repository }}
+      shell: bash
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a "${APP_VER}" -m "Release ${APP_VER}" || true
+        git push origin "${APP_VER}" || true
 
-      # ------------------------------------------------------------
-      # DEPENDÊNCIAS E NUITKA
-      # ------------------------------------------------------------
-      - name: Install dependencies
-        shell: pwsh
-        run: |
-          python -m pip install --upgrade pip wheel setuptools
-          pip install -r requirements.txt
-          pip install nuitka ordered-set zstandard
+    # ------------------------------------------------------------
+    # PYTHON
+    # ------------------------------------------------------------
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
 
-      # ------------------------------------------------------------
-      # BUILD NUITKA (STANDALONE, SEM ONEFILE)
-      # ------------------------------------------------------------
-      - name: Build EXE with Nuitka (Standalone Unpacked)
-        shell: pwsh
-        run: |
-          python -m nuitka `
-            --standalone `
-            --follow-imports `
-            --enable-plugin=tk-inter `
-            --windows-icon-from-ico=assets/app.ico `
-            --include-data-dir=db=db `
-            --assume-yes-for-downloads `
-            --remove-output `
-            --output-dir=dist `
-            main.py
+    # ------------------------------------------------------------
+    # DEPENDÊNCIAS + NUITKA
+    # ------------------------------------------------------------
+    - name: Install dependencies
+      shell: pwsh
+      run: |
+        python -m pip install --upgrade pip wheel setuptools
+        pip install -r requirements.txt
+        pip install nuitka ordered-set zstandard
 
-          Write-Host "Conteúdo de dist/:"
-          Get-ChildItem dist -Recurse
+    # ------------------------------------------------------------
+    # COMPILAÇÃO COM NUITKA
+    # ------------------------------------------------------------
+    - name: Build EXE with Nuitka (Standalone Unpacked)
+      shell: pwsh
+      run: |
+        python -m nuitka `
+          --standalone `
+          --follow-imports `
+          --enable-plugin=tk-inter `
+          --windows-icon-from-ico=installer/assets/icon.ico `
+          --include-data-dir=db=db `
+          --assume-yes-for-downloads `
+          --output-dir=dist `
+          main.py
 
-      # ------------------------------------------------------------
-      # RENOMEAR EXE PRINCIPAL
-      # ------------------------------------------------------------
-      - name: Rename EXE
-        shell: pwsh
-        run: |
-          $exe = Get-ChildItem -Recurse "dist/main.dist" -Filter "*.exe" | Select-Object -First 1
-          if (-not $exe) { throw "Nenhum EXE encontrado!" }
+        Write-Host "=== Conteúdo da pasta dist ==="
+        Get-ChildItem dist -Recurse
 
-          $target = "dist/main.dist/${{ env.APP_NAME }}.exe"
-          Move-Item $exe.FullName $target -Force
-          Write-Host "EXE Final: $target"
+    # ------------------------------------------------------------
+    # DETECTAR PASTA .DIST GERADA PELO NUITKA
+    # ------------------------------------------------------------
+    - name: Detect Nuitka output dir
+      id: detect_dist
+      shell: pwsh
+      run: |
+        $d = Get-ChildItem dist -Directory | Where-Object { $_.Name -like "*.dist" } | Select-Object -First 1
+        if (-not $d) { throw "Nenhuma pasta .dist encontrada em dist/" }
 
-      # ------------------------------------------------------------
-      # INSTALAR NSIS E GERAR O INSTALADOR
-      # ------------------------------------------------------------
-      # ------------------------------------------------------------
-      # INSTALAR NSIS
-      # ------------------------------------------------------------
-      - name: Install NSIS
-        shell: pwsh
-        run: |
-          choco install nsis -y
+        "DIST_DIR=dist\$($d.Name)" | Out-File $env:GITHUB_ENV -Append
+        Write-Host "DIST_DIR encontrado: dist\$($d.Name)"
 
-          $nsis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
-          if (Test-Path $nsis) {
-            Write-Host "NSIS instalado em: $nsis"
-          } else {
-            Write-Error "NSIS NÃO encontrado em $nsis após instalação."
-            exit 1
-          }
+    # ------------------------------------------------------------
+    # RENOMEAR EXE DENTRO DA PASTA
+    # ------------------------------------------------------------
+    - name: Rename EXE
+      shell: pwsh
+      run: |
+        $exe = Get-ChildItem -Recurse "${{ env.DIST_DIR }}" -Filter "*.exe" | Select-Object -First 1
+        if (-not $exe) { throw "Nenhum EXE encontrado dentro de $env:DIST_DIR" }
 
-      # ------------------------------------------------------------
-      # GERAR INSTALADOR COM NSIS
-      # ------------------------------------------------------------
-      - name: Build Installer (NSIS)
-        shell: pwsh
-        run: |
-          $nsis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+        $target = Join-Path $exe.Directory.FullName "${{ env.APP_NAME }}.exe"
+        Move-Item $exe.FullName $target -Force
 
-          if (!(Test-Path $nsis)) {
-            throw "NSIS não encontrado em $nsis. Verifique o step de instalação."
-          }
+        Write-Host "EXE final renomeado para:"
+        Write-Host $target
 
-          # se o installer.nsi estiver na raiz do repo:
-          & $nsis installer\installer.nsi
+    # ------------------------------------------------------------
+    # INSTALAR NSIS
+    # ------------------------------------------------------------
+    - name: Install NSIS
+      shell: pwsh
+      run: |
+        choco install nsis -y
 
-          Write-Host "Arquivos gerados:"
-          Get-ChildItem . -Filter "setup_*.exe"
+        $nsis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+        if (!(Test-Path $nsis)) {
+          throw "NSIS não encontrado em $nsis"
+        }
 
+        "NSIS_EXE=$nsis" | Out-File $env:GITHUB_ENV -Append
+        Write-Host "NSIS instalado: $nsis"
 
-      # ------------------------------------------------------------
-      # ARTEFATO
-      # ------------------------------------------------------------
-      - name: Upload installer artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: installer-${{ env.APP_VER }}
-          path: setup_*.exe
+    # ------------------------------------------------------------
+    # PREPARAR INSTALLER.NSI
+    # ------------------------------------------------------------
+    - name: Prepare installer script
+      shell: pwsh
+      run: |
+        Copy-Item installer/installer.nsi installer_parsed.nsi -Force
 
-      # ------------------------------------------------------------
-      # RELEASE
-      # ------------------------------------------------------------
-      - name: Publish Release
-        if: ${{ inputs.publish_release }}
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ env.APP_VER }}
-          files: setup_*.exe
-          generate_release_notes: true
+        (Get-Content installer_parsed.nsi) `
+          -replace '\$\{APP_VER\}', '${{ env.APP_VER }}' `
+          -replace '\$\{APP_NAME\}', '${{ env.APP_NAME }}' |
+          Set-Content installer_parsed.nsi
+
+        Write-Host "installer_parsed.nsi gerado."
+
+    # ------------------------------------------------------------
+    # GERAR INSTALADOR COM NSIS
+    # ------------------------------------------------------------
+    - name: Build Installer (NSIS)
+      shell: pwsh
+      run: |
+        & "${{ env.NSIS_EXE }}" installer_parsed.nsi
+
+        Write-Host "Arquivos gerados:"
+        Get-ChildItem . -Filter "setup_*.exe"
+
+    # ------------------------------------------------------------
+    # ARTEFATO FINAL
+    # ------------------------------------------------------------
+    - name: Upload installer artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: installer-${{ env.APP_VER }}
+        path: setup_*.exe
+
+    # ------------------------------------------------------------
+    # RELEASE
+    # ------------------------------------------------------------
+    - name: Publish Release
+      if: ${{ inputs.publish_release }}
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ env.APP_VER }}
+        files: setup_*.exe
+        generate_release_notes: true
