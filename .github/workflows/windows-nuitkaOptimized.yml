@@ -83,7 +83,7 @@ jobs:
     # ------------------------------------------------------------
     # NUITKA — COMPILAÇÃO OTIMIZADA
     # ------------------------------------------------------------
-    - name: Build EXE with Nuitka Optimized
+    - name: Build EXE with Nuitka (Optimized)
       shell: pwsh
       run: |
         python -m nuitka `
@@ -104,10 +104,6 @@ jobs:
           --nofollow-import-to=pydoc_data `
           --nofollow-import-to=tkinter.test `
           --nofollow-import-to=tcl.test `
-          --noinclude-matplotlib-mode=error `
-          --noinclude-numpy-mode=error `
-          --noinclude-unittest-mode=error `
-          --noinclude-IPython-mode=error `
           --output-dir=dist `
           main.py
 
