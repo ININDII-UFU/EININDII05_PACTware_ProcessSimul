@@ -28,7 +28,7 @@ Section "Install ${APP_NAME}"
     CreateShortCut "$SMPROGRAMS\${APP_NAME}\Desinstalar ${APP_NAME}.lnk" "${INSTALL_DIR}\Uninstall.exe"
 
     ; Opcional: Desktop
-    ;CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "${INSTALL_DIR}\${APP_NAME}.exe"
+    CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "${INSTALL_DIR}\${APP_NAME}.exe"
 
     WriteUninstaller "${INSTALL_DIR}\Uninstall.exe"
 SectionEnd
