@@ -89,6 +89,7 @@ jobs:
           --lto=yes `
           --python-flag=no_site `
           --python-flag=-O `
+          --assume-yes-for-downloads `
           --nofollow-import-to=matplotlib `
           --nofollow-import-to=numpy `
           --nofollow-import-to=pytest `
