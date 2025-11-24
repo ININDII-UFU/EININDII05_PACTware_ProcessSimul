@@ -6,5 +6,3 @@ control
 openpyxl
 xlrd
 pymodbus==3.3.0
-pyinstaller>=6.4
-pyinstaller-hooks-contrib>=2024.6
