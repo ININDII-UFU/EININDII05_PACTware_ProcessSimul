@@ -2,7 +2,7 @@ tk
 pandas
 pyserial>=3.5
 asteval
-control
+control-no-matplotlib
 openpyxl
 xlrd
 pymodbus==3.3.0
