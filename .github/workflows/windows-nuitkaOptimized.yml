@@ -25,16 +25,13 @@ jobs:
 
     steps:
 
-    # ------------------------------------------------------------
-    # CHECKOUT
-    # ------------------------------------------------------------
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     # ------------------------------------------------------------
-    # VERSÃO E VARIÁVEIS
+    # DEFINIR VARIÁVEIS
     # ------------------------------------------------------------
     - name: Compute version and names
       shell: pwsh
@@ -53,9 +50,6 @@ jobs:
         "APP_NAME=ProcessSimul" | Out-File $env:GITHUB_ENV -Append
         Write-Host "APP_VER=$ver | APP_NAME=ProcessSimul"
 
-    # ------------------------------------------------------------
-    # TAG AUTOMÁTICA
-    # ------------------------------------------------------------
     - name: Create & push tag
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_repository }}
       shell: bash
@@ -81,13 +75,14 @@ jobs:
         pip install nuitka ordered-set zstandard
 
     # ------------------------------------------------------------
-    # NUITKA — COMPILAÇÃO OTIMIZADA
+    # NUITKA OTIMIZADO
     # ------------------------------------------------------------
     - name: Build EXE with Nuitka (Optimized)
       shell: pwsh
       run: |
         python -m nuitka `
           --standalone `
+          --follow-imports `
           --enable-plugin=tk-inter `
           --windows-icon-from-ico=installer/assets/icon.ico `
           --include-data-dir=db=db `
@@ -110,7 +105,7 @@ jobs:
         Get-ChildItem dist -Recurse
 
     # ------------------------------------------------------------
-    # DETECTAR PASTA .DIST
+    # DETECTAR .DIST
     # ------------------------------------------------------------
     - name: Detect Nuitka output dir
       id: detect_dist
@@ -123,31 +118,31 @@ jobs:
         Write-Host "DIST_DIR encontrado: dist\$($d.Name)"
 
     # ------------------------------------------------------------
-    # RENOMEAR O EXE FINAL
+    # RENOMEAR EXE
     # ------------------------------------------------------------
     - name: Rename EXE inside .dist
       shell: pwsh
       run: |
         $exe = Get-ChildItem -Recurse "${{ env.DIST_DIR }}" -Filter "*.exe" | Select-Object -First 1
-        if (-not $exe) { throw "Nenhum EXE encontrado dentro de $env:DIST_DIR" }
+        if (-not $exe) { throw "Nenhum EXE encontrado" }
 
         $target = Join-Path $exe.Directory.FullName "${{ env.APP_NAME }}.exe"
         Move-Item $exe.FullName $target -Force
-        Write-Host "EXE final renomeado para: $target"
+        Write-Host "Renomeado para: $target"
 
     # ------------------------------------------------------------
-    # INSTALLER NSIS
+    # NSIS
     # ------------------------------------------------------------
     - name: Install NSIS
       shell: pwsh
       run: |
         choco install nsis -y
         $nsis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
-        if (!(Test-Path $nsis)) { throw "NSIS não encontrado em $nsis" }
+        if (!(Test-Path $nsis)) { throw "NSIS não encontrado" }
         "NSIS_EXE=$nsis" | Out-File $env:GITHUB_ENV -Append
 
     # ------------------------------------------------------------
-    # PREPARAR installer_parsed.nsi
+    # PREPARAR INSTALADOR
     # ------------------------------------------------------------
     - name: Prepare installer script
       shell: pwsh
@@ -155,14 +150,14 @@ jobs:
         Copy-Item installer/installer.nsi installer_parsed.nsi -Force
 
         (Get-Content installer_parsed.nsi) `
-          -replace '\$\{APP_VERSION\}', '${{ env.APP_VER }}' `
-          -replace '\$\{APP_NAME\}', '${{ env.APP_NAME }}' |
+          -replace 'v0.0.5', '${{ env.APP_VER }}' `
+          -replace 'APP_NAME ".*"', 'APP_NAME "${{ env.APP_NAME }}"' |
           Set-Content installer_parsed.nsi
 
         Write-Host "installer_parsed.nsi gerado."
 
     # ------------------------------------------------------------
-    # GERAR INSTALADOR
+    # BUILD INSTALADOR
     # ------------------------------------------------------------
     - name: Build Installer (NSIS)
       shell: pwsh
@@ -173,7 +168,7 @@ jobs:
         Get-ChildItem . -Filter "setup_*.exe"
 
     # ------------------------------------------------------------
-    # UPLOAD DO ARTEFATO
+    # ARTEFATO
     # ------------------------------------------------------------
     - name: Upload installer artifact
       uses: actions/upload-artifact@v4
