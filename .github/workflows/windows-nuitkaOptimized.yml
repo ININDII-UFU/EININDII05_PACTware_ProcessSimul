@@ -25,13 +25,16 @@ jobs:
 
     steps:
 
+    # ------------------------------------------------------------
+    # CHECKOUT
+    # ------------------------------------------------------------
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     # ------------------------------------------------------------
-    # DEFINIR VARIÁVEIS
+    # VARIÁVEIS DE VERSÃO
     # ------------------------------------------------------------
     - name: Compute version and names
       shell: pwsh
@@ -47,9 +50,14 @@ jobs:
         }
 
         "APP_VER=$ver" | Out-File $env:GITHUB_ENV -Append
-        "APP_NAME=ProcessSimul" | Out-File $env:GITHUB_ENV -Append
-        Write-Host "APP_VER=$ver | APP_NAME=ProcessSimul"
+        "APP_NAME=EININDII05_PACTware_ProcessSimul" | Out-File $env:GITHUB_ENV -Append
 
+        Write-Host "Versão: $ver"
+        Write-Host "Nome do app: EININDII05_PACTware_ProcessSimul"
+
+    # ------------------------------------------------------------
+    # CRIAR TAG
+    # ------------------------------------------------------------
     - name: Create & push tag
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_repository }}
       shell: bash
@@ -60,7 +68,7 @@ jobs:
         git push origin "${APP_VER}" || true
 
     # ------------------------------------------------------------
-    # PYTHON
+    # PYTHON + DEPENDÊNCIAS
     # ------------------------------------------------------------
     - name: Setup Python
       uses: actions/setup-python@v5
@@ -75,7 +83,7 @@ jobs:
         pip install nuitka ordered-set zstandard
 
     # ------------------------------------------------------------
-    # NUITKA OTIMIZADO
+    # COMPILAÇÃO COM NUITKA (OTIMIZADA + COMPATÍVEL COM CONTROL)
     # ------------------------------------------------------------
     - name: Build EXE with Nuitka (Optimized)
       shell: pwsh
@@ -84,14 +92,12 @@ jobs:
           --standalone `
           --follow-imports `
           --enable-plugin=tk-inter `
-          --windows-icon-from-ico=assets/app.ico `
+          --windows-icon-from-ico=installer/assets/icon.ico `
           --include-data-dir=db=db `
           --lto=yes `
+          --assume-yes-for-downloads `
           --python-flag=no_site `
           --python-flag=-O `
-          --assume-yes-for-downloads `
-          --nofollow-import-to=matplotlib `
-          --nofollow-import-to=numpy `
           --nofollow-import-to=pytest `
           --nofollow-import-to=IPython `
           --nofollow-import-to=jupyter `
@@ -102,7 +108,7 @@ jobs:
           --output-dir=dist `
           main.py
 
-        Write-Host "=== Conteúdo da pasta dist ==="
+        Write-Host "=== Conteúdo dist ==="
         Get-ChildItem dist -Recurse
 
     # ------------------------------------------------------------
@@ -116,23 +122,23 @@ jobs:
         if (-not $d) { throw "Nenhuma pasta .dist encontrada em dist/" }
 
         "DIST_DIR=dist\$($d.Name)" | Out-File $env:GITHUB_ENV -Append
-        Write-Host "DIST_DIR encontrado: dist\$($d.Name)"
+        Write-Host "DIST_DIR detectado: dist\$($d.Name)"
 
     # ------------------------------------------------------------
-    # RENOMEAR EXE
+    # RENOMEAR EXECUTÁVEL
     # ------------------------------------------------------------
     - name: Rename EXE inside .dist
       shell: pwsh
       run: |
         $exe = Get-ChildItem -Recurse "${{ env.DIST_DIR }}" -Filter "*.exe" | Select-Object -First 1
-        if (-not $exe) { throw "Nenhum EXE encontrado" }
+        if (-not $exe) { throw "Nenhum EXE encontrado na pasta .dist" }
 
-        $target = Join-Path $exe.Directory.FullName "${{ env.APP_NAME }}.exe"
-        Move-Item $exe.FullName $target -Force
-        Write-Host "Renomeado para: $target"
+        $newpath = Join-Path $exe.Directory.FullName "${{ env.APP_NAME }}.exe"
+        Move-Item $exe.FullName $newpath -Force
+        Write-Host "Renomeado para: $newpath"
 
     # ------------------------------------------------------------
-    # NSIS
+    # INSTALAR NSIS
     # ------------------------------------------------------------
     - name: Install NSIS
       shell: pwsh
@@ -143,7 +149,7 @@ jobs:
         "NSIS_EXE=$nsis" | Out-File $env:GITHUB_ENV -Append
 
     # ------------------------------------------------------------
-    # PREPARAR INSTALADOR
+    # PROCESSAR installer.nsi
     # ------------------------------------------------------------
     - name: Prepare installer script
       shell: pwsh
@@ -151,21 +157,21 @@ jobs:
         Copy-Item installer/installer.nsi installer_parsed.nsi -Force
 
         (Get-Content installer_parsed.nsi) `
-          -replace 'v0.0.5', '${{ env.APP_VER }}' `
-          -replace 'APP_NAME ".*"', 'APP_NAME "${{ env.APP_NAME }}"' |
-          Set-Content installer_parsed.nsi
+          -replace '\$\{APP_VERSION\}', '${{ env.APP_VER }}' `
+          -replace '\$\{APP_NAME\}', '${{ env.APP_NAME }}' `
+          | Set-Content installer_parsed.nsi
 
-        Write-Host "installer_parsed.nsi gerado."
+        Write-Host "installer_parsed.nsi pronto"
 
     # ------------------------------------------------------------
-    # BUILD INSTALADOR
+    # GERAR INSTALADOR FINAL
     # ------------------------------------------------------------
     - name: Build Installer (NSIS)
       shell: pwsh
       run: |
         & "${{ env.NSIS_EXE }}" installer_parsed.nsi
 
-        Write-Host "Arquivos do instalador:"
+        Write-Host "Arquivos finais:"
         Get-ChildItem . -Filter "setup_*.exe"
 
     # ------------------------------------------------------------
