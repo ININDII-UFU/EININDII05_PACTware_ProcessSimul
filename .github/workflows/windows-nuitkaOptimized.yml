@@ -90,7 +90,7 @@ jobs:
           --standalone `
           --follow-imports `
           --enable-plugin=tk-inter `
-          --windows-icon-from-ico=installer/assets/icon.ico `
+          --windows-icon-from-ico=assets/app.ico `
           --include-data-dir=db=db `
           --lto=yes `
           --python-flag=no_site `
