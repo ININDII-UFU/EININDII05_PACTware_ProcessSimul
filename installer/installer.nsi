@@ -3,9 +3,6 @@
 !define COMPANY "UFU-ININDII"
 !define INSTALL_DIR "$PROGRAMFILES32\${APP_NAME}"
 
-Icon "installer/assets/icon.ico"
-UninstallIcon "installer/assets/icon.ico"
-
 OutFile "setup_${APP_NAME}_${APP_VERSION}.exe"
 InstallDir "${INSTALL_DIR}"
 
