@@ -118,11 +118,19 @@ jobs:
       id: detect_dist
       shell: pwsh
       run: |
-        $d = Get-ChildItem dist -Directory | Where-Object { $_.Name -like "*.dist" } | Select-Object -First 1
-        if (-not $d) { throw "Nenhuma pasta .dist encontrada em dist/" }
+        $dirs = Get-ChildItem dist -Directory
+
+        Write-Host "Pastas encontradas em dist/:"
+        $dirs | ForEach-Object { Write-Host $_.Name }
+
+        $d = $dirs | Where-Object { $_.Name -match "dist" } | Select-Object -First 1
+
+        if (-not $d) {
+          throw "Nenhuma pasta contendo 'dist' encontrada em dist/. Abortando."
+        }
 
         "DIST_DIR=dist\$($d.Name)" | Out-File $env:GITHUB_ENV -Append
-        Write-Host "DIST_DIR detectado: dist\$($d.Name)"
+        Write-Host "DIST_DIR detectado automaticamente: dist\$($d.Name)"
 
     # ------------------------------------------------------------
     # RENOMEAR EXECUTÁVEL
