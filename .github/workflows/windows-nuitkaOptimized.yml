@@ -44,7 +44,7 @@ jobs:
         }
 
         "APP_VER=$ver"           | Out-File $env:GITHUB_ENV -Append
-        "APP_NAME=EININDII05_PACTware_ProcessSimul" | Out-File $env:GITHUB_ENV -Append
+        "APP_NAME=ProcessSimul" | Out-File $env:GITHUB_ENV -Append
 
         Write-Host "Versão: $ver"
         Write-Host "Nome do app: EININDII05_PACTware_ProcessSimul"
@@ -86,8 +86,6 @@ jobs:
           --nofollow-import-to=pytest `
           --nofollow-import-to=IPython `
           --nofollow-import-to=jupyter `
-          --nofollow-import-to=pydoc `
-          --nofollow-import-to=pydoc_data `
           --nofollow-import-to=tkinter.test `
           --nofollow-import-to=tcl.test `
           --output-dir=dist `
