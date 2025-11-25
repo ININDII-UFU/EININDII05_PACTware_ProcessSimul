@@ -1,4 +1,4 @@
-!define APP_NAME "EININDII05_PACTware_ProcessSimul"
+!define APP_NAME "ProcessSimul"
 !define APP_VERSION "${APP_VER}"
 !define COMPANY "UFU-ININDII"
 !define INSTALL_DIR "$PROGRAMFILES32\${APP_NAME}"
