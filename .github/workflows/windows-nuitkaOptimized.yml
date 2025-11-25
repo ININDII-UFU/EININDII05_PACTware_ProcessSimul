@@ -47,7 +47,7 @@ jobs:
         "APP_NAME=ProcessSimul" | Out-File $env:GITHUB_ENV -Append
 
         Write-Host "Versão: $ver"
-        Write-Host "Nome do app: EININDII05_PACTware_ProcessSimul"
+        Write-Host "Nome do app: ProcessSimul"
 
     - name: Create & push tag
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_repository }}
