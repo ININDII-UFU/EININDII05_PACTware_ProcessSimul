@@ -200,36 +200,77 @@ def _hrt_type_sreal2_hex(valor_float: float, byte_size: int) -> str:
 def _hrt_type_pascii2_hex(valor: str, byte_size: int) -> str:
     """
     Converte string para HART PACKED ASCII (6 bits/char) em HEX com exatamente `byte_size` bytes.
-    Regras:
+
+    Regras implementadas (conforme pedido):
       - a..z -> A..Z
       - fora de 0x20..0x5F -> ' '
-      - se sobrar: corta do começo; se faltar: completa com espaço à direita
-      - sem padding de zeros em bits (requer byte_size % 3 == 0)
+      - se faltar: completa com espaço à direita (sempre)
+      - se sobrar: ERRO (não corta)
+      - SEMPRE retorna exatamente `byte_size` bytes:
+          * se 8*byte_size não for múltiplo de 6, faz padding de bits 0 no final
+            (isso é necessário para fechar o último byte).
     """
     if byte_size <= 0:
         return ""
 
-    # 8*byte_size precisa ser múltiplo de 6 -> byte_size múltiplo de 3
-    if byte_size % 3 != 0:
-        raise ValueError("byte_size deve ser múltiplo de 3 para PACKED ASCII sem padding de bits.")
-
-    # 4 chars pASCII = 3 bytes
-    n_chars = (byte_size * 8) // 6  # = byte_size * 4 // 3
-
     s = (valor or "")
-    # corta do começo se for maior
+
+    # Quantos caracteres de 6 bits cabem em byte_size bytes?
+    # Precisamos de n_chars tal que n_chars*6 <= byte_size*8 (cabe em bits).
+    n_chars = (byte_size * 8) // 6  # floor
+
+    # Se sobrar: erro (conforme pedido)
     if len(s) > n_chars:
-        s = s[-n_chars:]
-    # completa com espaços se for menor
-    elif len(s) < n_chars:
+        raise ValueError(
+            f"Texto maior que o máximo permitido para PACKED ASCII em {byte_size} bytes. "
+            f"len={len(s)} > max_chars={n_chars}."
+        )
+
+    # Se faltar: completa com espaços
+    if len(s) < n_chars:
         s = s.ljust(n_chars, " ")
 
-    encoded_values = [ord(c) for c in s]
-    binary_values = [bin(get_bits(e, 0, 6))[2:].zfill(6) for e in encoded_values]
-    binary_str = ''.join(binary_values)
-    eight_bit_chunks = split_by_length(binary_str, 8)
-    hex_str = ''.join(f"{int(chunk, 2):02X}" for chunk in eight_bit_chunks)
-    return hex_str.zfill(2*byte_size)
+    # Normalização e conversão para 6 bits
+    sixbit_vals = []
+    for ch in s:
+        if "a" <= ch <= "z":
+            ch = ch.upper()
+
+        code = ord(ch)
+        if not (0x20 <= code <= 0x5F):
+            code = 0x20  # espaço
+
+        sixbit_vals.append(code & 0x3F)
+
+    # Empacotar em fluxo de bits (MSB-first)
+    out = bytearray()
+    acc = 0
+    acc_bits = 0
+
+    for v in sixbit_vals:
+        acc = (acc << 6) | v
+        acc_bits += 6
+
+        while acc_bits >= 8:
+            shift = acc_bits - 8
+            out.append((acc >> shift) & 0xFF)
+            acc_bits -= 8
+            acc &= (1 << acc_bits) - 1 if acc_bits > 0 else 0
+
+    # Aqui pode sobrar de 1..7 bits se byte_size*8 não for múltiplo de 6.
+    # Precisamos produzir exatamente byte_size bytes -> completar o último byte com zeros.
+    if acc_bits > 0:
+        out.append((acc << (8 - acc_bits)) & 0xFF)
+        acc_bits = 0
+
+    # Agora garante exatamente byte_size bytes (padding com 0x00 se ainda faltar 1 byte por arredondamento)
+    if len(out) < byte_size:
+        out.extend(b"\x00" * (byte_size - len(out)))
+    elif len(out) > byte_size:
+        # Isso não deveria acontecer com n_chars calculado via floor, mas fica a segurança
+        out = out[:byte_size]
+
+    return out.hex().upper()
 
 def _hrt_type_date2_hex(valor: str, byte_size: int) -> str:
     aux = valor.split("/")
@@ -241,7 +282,6 @@ def _hrt_type_time2_hex(valor: datetime, byte_size: int) -> str:
     total_ms = valor.hour * 3600000 + valor.minute * 60000 + valor.second * 1000 + int(valor.microsecond / 1000)
     aux = int(total_ms / 0.03125)
     return f"{(aux >> 24) & 0xFF:02X}{(aux >> 16) & 0xFF:02X}{(aux >> 8) & 0xFF:02X}{aux & 0xFF:02X}".zfill(2*byte_size)
-
 
 def hrt_type_hex_from(valor, type_str: str, byte_size: int) -> str:
     t = type_str.upper()
