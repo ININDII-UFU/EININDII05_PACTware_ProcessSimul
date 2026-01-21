@@ -9,6 +9,7 @@ from typing import Union
 import math
 import unittest
 import re
+import struct
 
 def format_number(num):
     if abs(num) >= 0.0001:  # Se for maior ou igual a 0.0001, formata normal
@@ -82,12 +83,45 @@ def _hrt_type_hex2_int(str_int: str) -> int:
     val = int(str_int, 16)
     return to_signed_16(val)
 
+_hex8 = re.compile(r"^[0-9A-Fa-f]{8}$")
+
 def _hrt_type_hex2_sreal(str_float: str) -> float:
-    number = int(str_float, 16)
-    s = get_bits(number, 31, 1)
-    e = get_bits(number, 23, 8)
-    f = get_bits(number, 0, 23) / 8388608.0
-    return ((-1) ** s) * (2 ** (e - 127)) * (1 + f)
+    """
+    Converte hex para float IEEE-754 32-bit (SREAL).
+    Aceita:
+      - '42C80000' (8 hex)
+      - '0x42C80000'
+      - valores curtos como '00', '0000', etc. (completa à esquerda)
+    """
+    if str_float is None:
+        return 0.0
+
+    if not isinstance(str_float, str):
+        # se vier int, etc.
+        str_float = str(str_float)
+
+    s = str_float.strip()
+    if s.startswith(("0x", "0X")):
+        s = s[2:]
+    s = s.replace(" ", "")
+
+    # vazio ou "0" => 0.0
+    if s == "" or all(ch == "0" for ch in s):
+        s = "00000000"
+
+    # se veio com tamanho ímpar, completa 0 à esquerda
+    if len(s) % 2 == 1:
+        s = "0" + s
+
+    # se veio menor que 8, completa à esquerda até 8
+    if len(s) < 8:
+        s = s.zfill(8)
+
+    # se veio maior que 8, isso é bug de origem (não chute)
+    if len(s) != 8 or not re.fullmatch(r"[0-9A-Fa-f]{8}", s):
+        raise ValueError(f"Hex inválido para SREAL (8 hex): {str_float!r}")
+
+    return struct.unpack(">f", bytes.fromhex(s))[0]
 
 def _hrt_type_hex2_pascii(valor: str) -> str:
     # Converte o valor hexadecimal para inteiro e depois para uma string binária de múltiplos de 6 bits
@@ -173,7 +207,10 @@ def hrt_type_hex_to(valor: str, type_str: str):
 ###################################################################################
 ###################################################################################
 def _hrt_type_uint2_hex(u_int: int, byte_size: int) -> str:
-    if u_int > 65535:
+    if u_int < 0:
+        raise ValueError("Valor negativo não permitido")
+    max_val = (1 << (8 * byte_size)) - 1  # 1B=255, 2B=65535, 3B=16777215, ...
+    if u_int > max_val:
         raise ValueError("Valor acima do limite máximo")
     return format(u_int, f'0{2*byte_size}X')
 
@@ -185,64 +222,52 @@ def _hrt_type_int2_hex(i_val: int, byte_size: int) -> str:
     return format(i_val, f'0{2*byte_size}X')
 
 def _hrt_type_sreal2_hex(valor_float: float, byte_size: int) -> str:
-    bits_array = 0
-    if valor_float == 0.0:
-        return '0'.zfill(2*byte_size)
-    if valor_float < 0:
-        bits_array = set_bits(bits_array, 31, 1, 1)
-        valor_float = -valor_float
-    e = 127 + math.floor(math.log(valor_float, 2))
-    bits_array = set_bits(bits_array, 23, 8, e)
-    f = math.floor(((valor_float / (2 ** (e - 127))) - 1) * 8388608)
-    bits_array = set_bits(bits_array, 0, 23, f)
-    return format(bits_array, f'0{2*byte_size}X').upper()
+    if byte_size != 4:
+        raise ValueError("SREAL deve ter 4 bytes")
+    return struct.pack(">f", float(valor_float)).hex().upper()
 
 def _hrt_type_pascii2_hex(valor: str, byte_size: int) -> str:
     """
-    Converte string para HART PACKED ASCII (6 bits/char) em HEX com exatamente `byte_size` bytes.
+    PACKED ASCII (6 bits/char) -> HEX com exatamente `byte_size` bytes.
 
-    Regras implementadas (conforme pedido):
-      - a..z -> A..Z
-      - fora de 0x20..0x5F -> ' '
-      - se faltar: completa com espaço à direita (sempre)
-      - se sobrar: ERRO (não corta)
-      - SEMPRE retorna exatamente `byte_size` bytes:
-          * se 8*byte_size não for múltiplo de 6, faz padding de bits 0 no final
-            (isso é necessário para fechar o último byte).
+    - a..z -> A..Z
+    - fora de 0x20..0x5F -> ' '
+    - se sobrar: TRUNCA para caber (max_chars)
+    - se faltar: completa com espaço à direita
+    - sempre retorna exatamente `byte_size` bytes (faz padding de bits 0 no final se necessário)
     """
     if byte_size <= 0:
         return ""
 
     s = (valor or "")
 
-    # Quantos caracteres de 6 bits cabem em byte_size bytes?
-    # Precisamos de n_chars tal que n_chars*6 <= byte_size*8 (cabe em bits).
-    n_chars = (byte_size * 8) // 6  # floor
+    # Máximo de caracteres 6-bit que cabem nos bits disponíveis
+    max_chars = (byte_size * 8) // 6  # floor
 
-    # Se sobrar: erro (conforme pedido)
-    if len(s) > n_chars:
-        raise ValueError(
-            f"Texto maior que o máximo permitido para PACKED ASCII em {byte_size} bytes. "
-            f"len={len(s)} > max_chars={n_chars}."
-        )
-
-    # Se faltar: completa com espaços
-    if len(s) < n_chars:
-        s = s.ljust(n_chars, " ")
-
-    # Normalização e conversão para 6 bits
-    sixbit_vals = []
+    # Normaliza ANTES de contar/truncar (para não “estourar” depois por caracteres inválidos)
+    norm = []
     for ch in s:
         if "a" <= ch <= "z":
             ch = ch.upper()
 
         code = ord(ch)
         if not (0x20 <= code <= 0x5F):
-            code = 0x20  # espaço
+            ch = " "
+        norm.append(ch)
+    s = "".join(norm)
 
-        sixbit_vals.append(code & 0x3F)
+    # Se sobrar: trunca (mantém o começo)
+    if len(s) > max_chars:
+        s = s[:max_chars]
 
-    # Empacotar em fluxo de bits (MSB-first)
+    # Se faltar: completa com espaços
+    if len(s) < max_chars:
+        s = s.ljust(max_chars, " ")
+
+    # Converte para valores 6-bit
+    sixbit_vals = [(ord(ch) & 0x3F) for ch in s]
+
+    # Empacota 6-bit -> bytes
     out = bytearray()
     acc = 0
     acc_bits = 0
@@ -257,17 +282,14 @@ def _hrt_type_pascii2_hex(valor: str, byte_size: int) -> str:
             acc_bits -= 8
             acc &= (1 << acc_bits) - 1 if acc_bits > 0 else 0
 
-    # Aqui pode sobrar de 1..7 bits se byte_size*8 não for múltiplo de 6.
-    # Precisamos produzir exatamente byte_size bytes -> completar o último byte com zeros.
+    # Se sobrar bits, fecha o último byte com zeros (padding de bits)
     if acc_bits > 0:
         out.append((acc << (8 - acc_bits)) & 0xFF)
-        acc_bits = 0
 
-    # Agora garante exatamente byte_size bytes (padding com 0x00 se ainda faltar 1 byte por arredondamento)
+    # Garante exatamente byte_size bytes
     if len(out) < byte_size:
         out.extend(b"\x00" * (byte_size - len(out)))
     elif len(out) > byte_size:
-        # Isso não deveria acontecer com n_chars calculado via floor, mas fica a segurança
         out = out[:byte_size]
 
     return out.hex().upper()

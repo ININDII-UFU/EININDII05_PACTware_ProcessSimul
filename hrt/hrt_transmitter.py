@@ -321,6 +321,7 @@ class HrtTransmitter:
         """Retorna **HEX** convertendo de human→machine via ReactVar.translate (síncrono)."""
         rv = self._rv(row_key)
         human_val = getattr(rv, "_value", None)
+        print(f"[DBG] {row_key=} {human_val=} type={rv.type()} byteSize={rv.byteSize()}")
         return rv.translate(human_val, rv.type(), rv.byteSize(), DBState.machineValue, DBState.humanValue)
 
 
