@@ -39,7 +39,7 @@ hrt_banco: Dict[str, Tuple[Union[int, float], str, str]] = {
     'master_address': (1, 'BIT_ENUM01', '80', '80', '80', '80', '80', '80', '80', '80', '80', '80', '80'), # 80 - Master Primário ou 00 Master Secundário)
     'burst_mode': (1, 'BIT_ENUM01', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'), # 40 - Burst ON ou 00 Burst OFF)
     'manufacturer_id': (1, 'ENUM08', '3E', '3E', '3E', '3E', '3E', '3E', '3E', '3E', '3E', '3E', '3E'),
-    'device_type': (1, 'ENUM01', '07', '0A', '07', '0A', '02', '0A', '0A', '0A', '0A', '07', '0A'),
+    'device_type': (1, 'ENUM01', '03', '01', '03', '01', '02', '0A', '0A', '0A', '0A', '07', '0A'),
     'request_preambles': (1, 'UNSIGNED', '05', '05', '05', '05', '05', '05', '05', '05', '05', '05', '05'),
     'hart_revision': (1, 'UNSIGNED', '05', '05', '05', '05', '05', '05', '05', '05', '05', '05', '05'),
     'transmitter_revision': (1, 'UNSIGNED', '30', '30', '30', '30', '30', '30', '30', '30', '30', '30', '30'),
