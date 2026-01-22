@@ -30,7 +30,7 @@ from utils.safe_async import run_async
 from utils.dbtablewidget_tk import DBTableWidgetTk
 # usar o seu gerenciador HART (preferível)
 from hrt.hrt_comm import HrtComm
-from hrt.hrt_transmitter import HrtTransmitter
+from hrt.hrt_transmitter_v2 import HrtTransmitter
 from hrt.hrt_frame import HrtFrame
 
 import base64
