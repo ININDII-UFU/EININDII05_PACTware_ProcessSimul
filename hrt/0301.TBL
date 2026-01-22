@@ -1,0 +1,1424 @@
+DEVICE DIRECTORY INFORMATION
+----------------------------
+----------------------------
+
+BLOCK TABLE (table 4)
+---------------------
+ Index      ID       Item Tbl   Char Record   Char Record   Object      Name
+                      Offset     Item Tbl      Blk Item     Index
+                                  Offset      Name Offset
+     0   0x8000ff00      310         311             0        102     _MNG_HART_BLOCK
+
+ITEM TABLE (table 5)
+--------------------
+  Index      ID               Type    Object-Index      Name
+      0   0x96               variable       219      response_code
+      1   0x97               variable       221      device_status
+      2   0x98               variable       220      comm_status
+      3   0x99               variable       222      manufacturer_id
+      4   0x9a               variable       223      device_type
+      5   0x9b               variable       224      request_preambles
+      6   0x9c               variable       225      universal_revision
+      7   0x9d               variable       226      transmitter_revision
+      8   0x9e               variable       227      software_revision
+      9   0x9f               variable       228      hardware_revision
+     10   0xa0               variable       230      device_flags
+     11   0xa1               variable       231      device_id
+     12   0xa2               variable       232      polling_address
+     13   0xa3               variable       233      tag
+     14   0xa4               variable       234      message
+     15   0xa5               variable       235      descriptor
+     16   0xa6               variable       236      date
+     17   0xa7               variable       237      write_protect
+     18   0xa8               variable       238      private_label_distributor
+     19   0xa9               variable       239      final_assembly_number
+     20   0xab               variable       229      physical_signaling_code
+     21   0xac             item-array       292      dynamic_variables
+     22   0xae                command       402      read_unique_identifier
+     23   0xaf                command       403      read_pv
+     24   0xb0                command       404      read_pv_current_and_percent_range
+     25   0xb1                command       405      read_dynamic_variables_and_pv_current
+     26   0xb2                command       406      write_polling_address
+     27   0xb3                command       407      read_unique_identifier_with_tag
+     28   0xb4                command       408      read_message
+     29   0xb5                command       409      read_tag_descriptor_date
+     30   0xb6                command       410      read_pv_sensor_info
+     31   0xb7                command       411      read_pv_output_info
+     32   0xb8                command       412      read_final_assembly_number
+     33   0xb9                command       413      write_message
+     34   0xba                command       414      write_tag_descriptor_date
+     35   0xbb                command       415      write_final_assembly_number
+     36   0x3e8                  menu       325      root_menu
+     37   0x3e9                  menu       332      hot_key
+     38   0x7e9              variable       271      units_code
+     39   0x7ea              variable       272      transfer_function_code
+     40   0x7eb              variable       274      alarm_selection_code
+     41   0x7ec              variable       273      material_code
+     42   0x7ed              variable       266      unique_device_type_code
+     43   0x7ee              variable       275      write_protect_code
+     44   0x7ef              variable       276      company_identification_code
+     45   0x7f0              variable       277      burst_mode_control_code
+     46   0x7f1              variable       278      physical_signaling_codes
+     47   0x7f2              variable       279      flag_assignment
+     48   0x7f3              variable       280      operating_mode_code
+     49   0x7f4              variable       281      analog_output_numbers_code
+     50   0x7f5              variable       267      rosemount_model_code
+     51   0x7f6              variable       268      rosemount_analytical_model_code
+     52   0x7f7              variable       269      kayray_model_code
+     53   0x7f8              variable       270      micro_motion_model_code
+     54   0xfa0              variable       242      transmitter_variable_code_1
+     55   0xfa2              variable       243      transmitter_variable_code_2
+     56   0xfa3              variable       244      transmitter_variable_code_3
+     57   0xfa4              variable       245      transmitter_variable_code_4
+     58   0xfa5               command       416      read_transmitter_variables
+     59   0xfa6               command       417      write_pv_damping_value
+     60   0xfaa               command       418      reset_configuration_change_flag
+     61   0xfad               command       419      enter_exit_fixed_pv_current_mode
+     62   0xfae               command       420      perform_transmitter_self_test
+     63   0xfaf               command       421      perform_master_reset
+     64   0xfb0               command       422      set_pv_zero
+     65   0xfb1               command       423      write_pv_units
+     66   0xfb2               command       424      trim_pv_current_dac_zero
+     67   0xfb3               command       425      trim_pv_current_dac_gain
+     68   0xfb4               command       426      write_pv_transfer_function
+     69   0xfb5              variable       240      xmtr_specific_status_0
+     70   0xfb6              variable       241      xmtr_specific_status_1
+     71   0x1002               method       356      loop_test
+     72   0x1003               method       359      leave_fixed_current_mode
+     73   0x1004               method       357      dac_trim
+     74   0x1005               method       358      scaled_dac_trim
+     75   0x100d           item-array       295      transmitter_variables
+     76   0x1016               method       360      return_to_normal
+     77   0x1388           collection       306      process_pressure
+     78   0x138d             variable       246      pressure_units
+     79   0x138e             variable       247      pressure_value
+     80   0x138f             variable       249      pressure_percent_range
+     81   0x1390             variable       253      pressure_minimum_span
+     82   0x1391             variable       254      pressure_output_transfer_function
+     83   0x1392             variable       250      pressure_sensor_units
+     84   0x1393             variable       251      pressure_upper_range_limit
+     85   0x1394             variable       252      pressure_lower_range_limit
+     86   0x1395             variable       255      pressure_range_units
+     87   0x1396             variable       256      pressure_upper_range_value
+     88   0x1397             variable       258      pressure_lower_range_value
+     89   0x1398             variable       259      pressure_damping_value
+     90   0x1399               method       361      send_warning
+     91   0x139a             variable       260      flange_type
+     92   0x139b             variable       261      o_ring_material
+     93   0x139c             variable       262      meter_installation
+     94   0x139d             variable       263      remote_seal_type
+     95   0x139e             variable       264      module_fill_fluid
+     96   0x139f             variable       265      number_of_remote_seals
+     97   0x13a0                 unit       333      pressure_units_relation
+     98   0x13a1                 unit       334      pressure_range_units_relation
+     99   0x13a2                 unit       335      pressure_sensor_units_relation
+    100   0x1770             variable       283      pressure_sensor_serial_number
+    101   0x1774             variable       284      sensor_a_lower_sensor_trim_point
+    102   0x1776             variable       285      sensor_a_upper_sensor_trim_point
+    103   0x177a             variable       282      analog_output_alarm_select
+    104   0x177b             variable       159      module_type_code
+    105   0x177c             variable       286      flange_material
+    106   0x177f             variable       158      module_isolator_material
+    107   0x1785              command       427      write_upper_sensor_trim
+    108   0x1786              command       428      write_lower_sensor_trim
+    109   0x1787               method       362      sensor_a_lower_sensor_trim
+    110   0x1788               method       364      leave_trim_mode
+    111   0x1789               method       363      sensor_a_upper_sensor_trim
+    112   0x1b5b                 menu       328      process_variables
+    113   0x1b5c                 menu       330      diag_service
+    114   0x1b5d                 menu       327      basic_setup
+    115   0x1b5e                 menu       329      detailed_setup
+    116   0x1b61                 menu       311      calibration
+    117   0x1b62                 menu       326      device_info
+    118   0x1b68                 menu       331      device_revisions
+    119   0x4000             variable       113      transmitter_variable_code_1_UNITS
+    120   0x4001             variable       105      transmitter_variable_code_1_VALUE
+    121   0x4002             variable       114      transmitter_variable_code_2_UNITS
+    122   0x4003             variable       107      transmitter_variable_code_2_VALUE
+    123   0x4004             variable       115      transmitter_variable_code_3_UNITS
+    124   0x4005             variable       109      transmitter_variable_code_3_VALUE
+    125   0x4006             variable       116      transmitter_variable_code_4_UNITS
+    126   0x4007             variable       111      transmitter_variable_code_4_VALUE
+    127   0x4008           collection       296      pv_concentation
+    128   0x4009           collection       297      temperature
+    129   0x400a             variable       171      Proc_pressure
+    130   0x400b             variable       206      concentration_unit
+    131   0x400c             variable       213      Conc_value
+    132   0x400d             variable       117      digital_units_mA
+    133   0x400e             variable       119      Output_mA
+    134   0x400f             variable       118      pv_percent_value
+    135   0x4010             variable       162      temperature_units
+    136   0x4011             variable       193      request_temperature_value
+    137   0x4012              command       369      read_static_data_material
+    138   0x4013             variable       196      meter_info
+    139   0x4014             variable       214      installation_type
+    140   0x4015             variable       215      probe_type
+    141   0x4016             variable       216      Probe_fluid
+    142   0x4017             variable       217      diaphragma_material
+    143   0x4018             variable       218      electric_connection
+    144   0x4019             variable       157      module_range_code
+    145   0x401a             variable       160      device_range_code
+    146   0x401b              command       370      write_static_data_material
+    147   0x401c              command       371      read_table_function
+    148   0x401d             variable       155      coordinate_group_number
+    149   0x401e             variable       154      table_lenght
+    150   0x401f           item-array       293      table
+    151   0x4024              command       372      write_table_function
+    152   0x4025             variable       152      coordinate
+    153   0x4026           item-array       294      points
+    154   0x4027              command       373      write_number_table_lenght
+    155   0x4028              command       374      read_dt_block_parameters
+    156   0x4029             variable       212      gl_value
+    157   0x402a              command       375      write_parameter_gl
+    158   0x402b              command       378      backup_restore
+    159   0x402c             variable       194      operation_code_1
+    160   0x402d             variable       195      operation_code_2
+    161   0x402e              command       379      read_zero_span_temperature_curve
+    162   0x402f             variable       189      mst_zero
+    163   0x4030             variable       190      mst_span
+    164   0x4031             variable       191      t_med
+    165   0x4032             variable       192      t_zero
+    166   0x4033              command       380      trim_temperature_sensor
+    167   0x4034              command       381      write_concentration_trim_upper_pressure
+    168   0x4035             variable       187      concentration_upper_value
+    169   0x4036              command       382      write_concentration_trim_Lower_pressure
+    170   0x4037             variable       188      concentration_lower_value
+    171   0x4038              command       383      read_display_code
+    172   0x4039             variable       208      indic_variable_first
+    173   0x403a             variable       209      indic_variable_second
+    174   0x403b              command       384      Write_Display_Code
+    175   0x403c              command       385      read_change_counters
+    176   0x403d             variable       185      chg_cnt_damping
+    177   0x403e             variable       174      chg_cnt_function
+    178   0x403f             variable       176      chg_cnt_trim_4
+    179   0x4040             variable       177      chg_cnt_trim_20
+    180   0x4041             variable       178      chg_cnt_trim_lower
+    181   0x4042             variable       179      chg_cnt_trim_upper
+    182   0x4043             variable       184      chg_cnt_temp_trim
+    183   0x4044             variable       183      chg_fail_safe
+    184   0x4045             variable       186      chg_cnt_backup
+    185   0x4046             variable       175      chg_cnt_constant
+    186   0x4047             variable       182      chg_cnt_write_protection
+    187   0x4048             variable       180      chg_cnt_multidrop
+    188   0x4049             variable       181      chg_cnt_conf_level
+    189   0x404a             variable       173      chg_cnt_dens_concentration
+    190   0x404b              command       386      write_self_calibration_pressure_trim
+    191   0x404c             variable       156      self_calibration
+    192   0x404d              command       387      write_communication_protection_mode
+    193   0x404e              command       388      read_smar_ordering_code
+    194   0x404f             variable       197      smar_ordering_code
+    195   0x4050              command       389      write_smar_ordering_code
+    196   0x4051              command       390      write_device_identification_number
+    197   0x4052              command       391      read_user_unit_string
+    198   0x4053             variable       201      user_unit_byte_1
+    199   0x4054             variable       202      user_unit_byte_2
+    200   0x4055             variable       203      user_unit_byte_3
+    201   0x4056             variable       204      user_unit_byte_4
+    202   0x4057             variable       205      user_unit_byte_5
+    203   0x4058              command       392      write_user_unit_string
+    204   0x4059              command       393      read_users_values
+    205   0x405b             variable       199      user_value_upper
+    206   0x405c             variable       198      user_value_lower
+    207   0x405d              command       394      write_user_values
+    208   0x405e              command       395      read_polynomial_limits
+    209   0x405f             variable       169      Upper_Polynomic_Limit
+    210   0x4060             variable       170      Lower_Polynomic_Limit
+    211   0x4061              command       396      write_polynomial_limits
+    212   0x4062              command       397      read_polynomial_output_parameters
+    213   0x4063             variable       163      cost_As0
+    214   0x4064             variable       164      cost_As1
+    215   0x4065             variable       165      cost_As2
+    216   0x4066             variable       166      cost_As3
+    217   0x4067             variable       167      cost_As4
+    218   0x4068             variable       168      cost_As5
+    219   0x4069              command       398      write_polynomial_output_parameters
+    220   0x406a              command       399      read_special_unit_temperature
+    221   0x406b              command       400      write_special_unit_temperature
+    222   0x406c              command       401      write_analog_output_alarm_select
+    223   0x406d             variable       104      PROCESS_VARIABLE
+    224   0x406e             variable       120      table_coordinate_0
+    225   0x406f             variable       121      table_coordinate_1
+    226   0x4070             variable       122      table_coordinate_2
+    227   0x4071             variable       123      table_coordinate_3
+    228   0x4072             variable       124      table_coordinate_4
+    229   0x4073             variable       125      table_coordinate_5
+    230   0x4074             variable       126      table_coordinate_6
+    231   0x4075             variable       127      table_coordinate_7
+    232   0x4076             variable       128      table_coordinate_8
+    233   0x4077             variable       129      table_coordinate_9
+    234   0x4078             variable       130      table_coordinate_10
+    235   0x4079             variable       131      table_coordinate_11
+    236   0x407a             variable       132      table_coordinate_12
+    237   0x407b             variable       133      table_coordinate_13
+    238   0x407c             variable       134      table_coordinate_14
+    239   0x407d             variable       135      table_coordinate_15
+    240   0x407e             variable       136      table_coordinate_16
+    241   0x407f             variable       137      table_coordinate_17
+    242   0x4080             variable       138      table_coordinate_18
+    243   0x4081             variable       139      table_coordinate_19
+    244   0x4082             variable       140      table_coordinate_20
+    245   0x4083             variable       141      table_coordinate_21
+    246   0x4084             variable       142      table_coordinate_22
+    247   0x4085             variable       143      table_coordinate_23
+    248   0x4086             variable       144      table_coordinate_24
+    249   0x4087             variable       145      table_coordinate_25
+    250   0x4088             variable       146      table_coordinate_26
+    251   0x4089             variable       147      table_coordinate_27
+    252   0x408a             variable       148      table_coordinate_28
+    253   0x408b             variable       149      table_coordinate_29
+    254   0x408c             variable       150      table_coordinate_30
+    255   0x408d             variable       151      table_coordinate_31
+    256   0x408e             variable       153      coordinate_order
+    257   0x408f             variable       161      temperature_value
+    258   0x4090             variable       172      aux_pressure
+    259   0x4092             variable       200      user_unit_string
+    260   0x4094           collection       298      coordinate_group_0
+    261   0x4095           collection       299      coordinate_group_4
+    262   0x4096           collection       300      coordinate_group_8
+    263   0x4097           collection       301      coordinate_group_12
+    264   0x4098           collection       302      coordinate_group_16
+    265   0x4099           collection       303      coordinate_group_20
+    266   0x409a           collection       304      coordinate_group_24
+    267   0x409b           collection       305      coordinate_group_28
+    268   0x409c                 menu       307      menu_single_unit
+    269   0x409d                 menu       308      menu_multidrop
+    270   0x409e                 menu       310      menu_mensuration
+    271   0x409f                 menu       315      conf_display
+    272   0x40a0                 menu       313      menu_polynomial
+    273   0x40a1                 menu       314      menu_conf_table
+    274   0x40a2                 menu       316      menu_trim_concentration
+    275   0x40a3                 menu       317      menu_auto_calibration
+    276   0x40a4                 menu       318      menu_trim_pressure
+    277   0x40a5                 menu       319      menu_trim_current
+    278   0x40a6               method       355      trim_temperature
+    279   0x40a7                 menu       320      menu_constants
+    280   0x40a8                 menu       321      menu_maint_ident
+    281   0x40a9                 menu       312      menu_op_count
+    282   0x40aa                 menu       324      menu_backup
+    283   0x40ab         edit-display       336      edit_special_monit
+    284   0x40ac               method       353      meth_multidrop
+    285   0x40ad                 menu       309      menu_multidrop_1
+    286   0x40ae               method       337      meth_mensuration
+    287   0x40af               method       352      edit
+    288   0x40b0               method       351      new
+    289   0x40b1               method       345      concentration_lower_trim
+    290   0x40b2               method       346      concentration_upper_trim
+    291   0x40b3               method       347      auto_lower_calibration
+    292   0x40b4               method       348      auto_upper_calibration
+    293   0x40b7                 menu       322      maint_format_serial
+    294   0x40b8                 menu       323      Menu_device_id
+    295   0x40b9               method       354      meth_device_id
+    296   0x40ba               method       339      read_from_sensor
+    297   0x40bb               method       342      write_on_sensor
+    298   0x40bc               method       343      full_write_on_sensor
+    299   0x40bd               method       344      full_read_sensor
+    300   0x40be               method       349      meth_special_monit
+    301   0x40bf               method       338      master_reset
+    302   0x40c0               method       350      return_loop
+    303   0x40c2             variable       210      Aux_indic_1
+    304   0x40c3             variable       211      Aux_indic_2
+    305   0x40c4              command       376      read_normal_position_work
+    306   0x40c5             variable       207      position_work
+    307   0x40c6              command       377      Write_normal_position_work
+    308   0x40c8               method       340      mth_enable_poly
+    309   0x40c9               method       341      mth_enable_table
+    310   0x8000ff00            block       103      _MNG_HART_BLOCK
+    311   0x8000ff01           record       365      hart_blk_char
+    312   0x8000ff02         variable       287      status_output
+    313   0x8000ff03         variable       291      int8_var_blk_char
+    314   0x8000ff04         variable       290      uint8_var_blk_char
+    315   0x8000ff05         variable       288      uint16_var_blk_char
+    316   0x8000ff06         variable       289      uint32_var_blk_char
+    317   0x8000ff11           record       366      DIGVAL_RECORD1
+    318   0x8000ff12           record       367      DIGVAL_RECORD2
+    319   0x8000ff13           record       368      DIGVAL_RECORD3
+
+LOCAL VARIABLE TABLE (table 21)
+-------------------------------
+ Index      ID       Object    Size          Type
+                      Index
+     0   0x4025        152        1            index
+     1   0x408e        153        1          integer
+     2   0x401d        155        1            index
+     3   0x96          219        1       enumerated
+     4   0xfa0         242        1            index
+     5   0xfa2         243        1            index
+     6   0xfa3         244        1            index
+     7   0xfa4         245        1            index
+     8   0x7e9         271        1       enumerated
+     9   0x7ea         272        1       enumerated
+    10   0x7ec         273        1       enumerated
+    11   0x7eb         274        1       enumerated
+    12   0x7f4         281        1       enumerated
+
+COMMAND NUMBER-TO-ITEM ID TABLE (table 22)
+------------------------------------------
+ Index    Number      ID
+     0       0    0xae      
+     1       1    0xaf      
+     2       2    0xb0      
+     3       3    0xb1      
+     4       6    0xb2      
+     5      11    0xb3      
+     6      12    0xb4      
+     7      13    0xb5      
+     8      14    0xb6      
+     9      15    0xb7      
+    10      16    0xb8      
+    11      17    0xb9      
+    12      18    0xba      
+    13      19    0xbb      
+    14      33    0xfa5     
+    15      34    0xfa6     
+    16      38    0xfaa     
+    17      40    0xfad     
+    18      41    0xfae     
+    19      42    0xfaf     
+    20      43    0xfb0     
+    21      44    0xfb1     
+    22      45    0xfb2     
+    23      46    0xfb3     
+    24      47    0xfb4     
+    25     128    0x4012    
+    26     129    0x401b    
+    27     130    0x1785    
+    28     131    0x1786    
+    29     133    0x401c    
+    30     134    0x4024    
+    31     135    0x4027    
+    32     142    0x4028    
+    33     143    0x402a    
+    34     148    0x40c4    
+    35     149    0x40c6    
+    36     153    0x402b    
+    37     154    0x402e    
+    38     155    0x4033    
+    39     156    0x4034    
+    40     157    0x4036    
+    41     164    0x4038    
+    42     165    0x403b    
+    43     166    0x403c    
+    44     168    0x404b    
+    45     169    0x404d    
+    46     173    0x404e    
+    47     174    0x4050    
+    48     175    0x4051    
+    49     176    0x4052    
+    50     177    0x4058    
+    51     178    0x4059    
+    52     179    0x405d    
+    53     183    0x405e    
+    54     184    0x4061    
+    55     185    0x4062    
+    56     186    0x4069    
+    57     187    0x406a    
+    58     188    0x406b    
+    59     203    0x406c    
+
+
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+_MNG_HART_BLOCK TABLES
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+
+PARAMETER TABLE (table 7)
+-------------------------
+ Index  Blk Item   Param   Param   Param    Param   Param    Size          Type     Class    Array Elem
+        Name Tbl  Mem Tbl   Mem   Elem Tbl  Elem   Elem Max                                   Item Tbl
+         Offset   Offset   Count   Offset   Count   Count                                      Offset
+     0        1        0       2    65535       0       0      0           unused  0x0          65535
+     1        2        2       2    65535       0       0      0           unused  0x0          65535
+     2        3        4       2    65535       0       0      0           unused  0x0          65535
+     3        4    65535       0    65535       0       0      4            float  0x12         65535
+     4        5    65535       0    65535       0       0      4            float  0x12         65535
+     5        6    65535       0    65535       0       0      4            float  0x12         65535
+     6        7    65535       0    65535       0       0      4            float  0x12         65535
+     7        8    65535       0    65535       0       0      4            float  0x12         65535
+     8        9    65535       0    65535       0       0      1         unsigned  0x20         65535
+     9       10    65535       0    65535       0       0      1         unsigned  0x20         65535
+    10       11    65535       0    65535       0       0      1         unsigned  0x20         65535
+    11       12    65535       0    65535       0       0      1         unsigned  0x20         65535
+    12       13    65535       0    65535       0       0      1       enumerated  0x20         65535
+    13       14    65535       0    65535       0       0      4            float  0x12         65535
+    14       15    65535       0    65535       0       0      4            float  0x12         65535
+    15       16    65535       0    65535       0       0      4            float  0x20         65535
+    16       17    65535       0    65535       0       0      4            float  0x20         65535
+    17       18    65535       0    65535       0       0      4            float  0x20         65535
+    18       19    65535       0    65535       0       0      4            float  0x20         65535
+    19       20    65535       0    65535       0       0      4            float  0x20         65535
+    20       21    65535       0    65535       0       0      4            float  0x20         65535
+    21       22    65535       0    65535       0       0      4            float  0x20         65535
+    22       23    65535       0    65535       0       0      4            float  0x20         65535
+    23       24    65535       0    65535       0       0      4            float  0x20         65535
+    24       25    65535       0    65535       0       0      4            float  0x20         65535
+    25       26    65535       0    65535       0       0      4            float  0x20         65535
+    26       27    65535       0    65535       0       0      4            float  0x20         65535
+    27       28    65535       0    65535       0       0      4            float  0x20         65535
+    28       29    65535       0    65535       0       0      4            float  0x20         65535
+    29       30    65535       0    65535       0       0      4            float  0x20         65535
+    30       31    65535       0    65535       0       0      4            float  0x20         65535
+    31       32    65535       0    65535       0       0      4            float  0x20         65535
+    32       33    65535       0    65535       0       0      4            float  0x20         65535
+    33       34    65535       0    65535       0       0      4            float  0x20         65535
+    34       35    65535       0    65535       0       0      4            float  0x20         65535
+    35       36    65535       0    65535       0       0      4            float  0x20         65535
+    36       37    65535       0    65535       0       0      4            float  0x20         65535
+    37       38    65535       0    65535       0       0      4            float  0x20         65535
+    38       39    65535       0    65535       0       0      4            float  0x20         65535
+    39       40    65535       0    65535       0       0      4            float  0x20         65535
+    40       41    65535       0    65535       0       0      4            float  0x20         65535
+    41       42    65535       0    65535       0       0      4            float  0x20         65535
+    42       43    65535       0    65535       0       0      4            float  0x20         65535
+    43       44    65535       0    65535       0       0      4            float  0x20         65535
+    44       45    65535       0    65535       0       0      4            float  0x20         65535
+    45       46    65535       0    65535       0       0      4            float  0x20         65535
+    46       47    65535       0    65535       0       0      4            float  0x20         65535
+    47       48    65535       0    65535       0       0      1            index  0x1000       65535
+    48       49    65535       0    65535       0       0      1          integer  0x1000       65535
+    49       50    65535       0    65535       0       0      1          integer  0x20         65535
+    50       51    65535       0    65535       0       0      1            index  0x1000       65535
+    51       52    65535       0    65535       0       0      1       enumerated  0x800        65535
+    52       53    65535       0    65535       0       0      1       enumerated  0x800        65535
+    53       54    65535       0    65535       0       0      1       enumerated  0x0          65535
+    54       55    65535       0    65535       0       0      1       enumerated  0x0          65535
+    55       56    65535       0    65535       0       0      1       enumerated  0x800        65535
+    56       57    65535       0    65535       0       0      4            float  0x8          65535
+    57       58    65535       0    65535       0       0      1       enumerated  0x8          65535
+    58       59    65535       0    65535       0       0      4            float  0x800        65535
+    59       60    65535       0    65535       0       0      4            float  0x800        65535
+    60       61    65535       0    65535       0       0      4            float  0x20         65535
+    61       62    65535       0    65535       0       0      4            float  0x800        65535
+    62       63    65535       0    65535       0       0      4            float  0x800        65535
+    63       64    65535       0    65535       0       0      4            float  0x800        65535
+    64       65    65535       0    65535       0       0      4            float  0x800        65535
+    65       66    65535       0    65535       0       0      4            float  0x800        65535
+    66       67    65535       0    65535       0       0      4            float  0x20         65535
+    67       68    65535       0    65535       0       0      4            float  0x20         65535
+    68       69    65535       0    65535       0       0      1          integer  0x800        65535
+    69       70    65535       0    65535       0       0      1          integer  0x800        65535
+    70       71    65535       0    65535       0       0      1          integer  0x800        65535
+    71       72    65535       0    65535       0       0      1          integer  0x800        65535
+    72       73    65535       0    65535       0       0      1          integer  0x800        65535
+    73       74    65535       0    65535       0       0      1          integer  0x800        65535
+    74       75    65535       0    65535       0       0      1          integer  0x800        65535
+    75       76    65535       0    65535       0       0      1          integer  0x800        65535
+    76       77    65535       0    65535       0       0      1          integer  0x800        65535
+    77       78    65535       0    65535       0       0      1          integer  0x800        65535
+    78       79    65535       0    65535       0       0      1          integer  0x800        65535
+    79       80    65535       0    65535       0       0      1          integer  0x800        65535
+    80       81    65535       0    65535       0       0      1          integer  0x800        65535
+    81       82    65535       0    65535       0       0      1          integer  0x800        65535
+    82       83    65535       0    65535       0       0      4            float  0xA          65535
+    83       84    65535       0    65535       0       0      4            float  0xA          65535
+    84       85    65535       0    65535       0       0      4            float  0xA          65535
+    85       86    65535       0    65535       0       0      4            float  0xA          65535
+    86       87    65535       0    65535       0       0      4            float  0xA          65535
+    87       88    65535       0    65535       0       0      4            float  0xA          65535
+    88       89    65535       0    65535       0       0      1          integer  0x800        65535
+    89       90    65535       0    65535       0       0      1          integer  0x800        65535
+    90       91    65535       0    65535       0       0      1       enumerated  0x8          65535
+    91       92    65535       0    65535       0       0     22            ascii  0x800        65535
+    92       93    65535       0    65535       0       0      4            float  0x8          65535
+    93       94    65535       0    65535       0       0      4            float  0x8          65535
+    94       95    65535       0    65535       0       0      5            ascii  0x22         65535
+    95       96    65535       0    65535       0       0      1          integer  0x22         65535
+    96       97    65535       0    65535       0       0      1          integer  0x22         65535
+    97       98    65535       0    65535       0       0      1          integer  0x22         65535
+    98       99    65535       0    65535       0       0      1          integer  0x22         65535
+    99      100    65535       0    65535       0       0      1          integer  0x22         65535
+   100      101    65535       0    65535       0       0      1       enumerated  0x20         65535
+   101      102    65535       0    65535       0       0      1       enumerated  0x100        65535
+   102      103    65535       0    65535       0       0      1       enumerated  0x100        65535
+   103      104    65535       0    65535       0       0      1       enumerated  0x100        65535
+   104      105    65535       0    65535       0       0      1       enumerated  0x100        65535
+   105      106    65535       0    65535       0       0      1       enumerated  0x100        65535
+   106      107    65535       0    65535       0       0      4            float  0x800        65535
+   107      108    65535       0    65535       0       0      1       enumerated  0x0          65535
+   108      109    65535       0    65535       0       0      1       enumerated  0x0          65535
+   109      110    65535       0    65535       0       0      1       enumerated  0x0          65535
+   110      111    65535       0    65535       0       0      1       enumerated  0x0          65535
+   111      112    65535       0    65535       0       0      1       enumerated  0x0          65535
+   112      113    65535       0    65535       0       0      1   bit-enumerated  0x83         65535
+   113      114    65535       0    65535       0       0      1       enumerated  0x80         65535
+   114      115    65535       0    65535       0       0      1       enumerated  0x80         65535
+   115      116    65535       0    65535       0       0      1         unsigned  0x80         65535
+   116      117    65535       0    65535       0       0      1         unsigned  0x80         65535
+   117      118    65535       0    65535       0       0      1         unsigned  0x80         65535
+   118      119    65535       0    65535       0       0      1         unsigned  0x800        65535
+   119      120    65535       0    65535       0       0      1         unsigned  0x800        65535
+   120      121    65535       0    65535       0       0      1       enumerated  0x800        65535
+   121      122    65535       0    65535       0       0      1   bit-enumerated  0x80         65535
+   122      123    65535       0    65535       0       0      3         unsigned  0x80         65535
+   123      124    65535       0    65535       0       0      1         unsigned  0x80         65535
+   124      125    65535       0    65535       0       0      8     packed-ascii  0x800        65535
+   125      126    65535       0    65535       0       0     32     packed-ascii  0x800        65535
+   126      127    65535       0    65535       0       0     16     packed-ascii  0x800        65535
+   127      128    65535       0    65535       0       0      3             date  0x800        65535
+   128      129    65535       0    65535       0       0      1       enumerated  0x800        65535
+   129      130    65535       0    65535       0       0      1       enumerated  0x800        65535
+   130      131    65535       0    65535       0       0      3         unsigned  0x800        65535
+   131      132    65535       0    65535       0       0      1   bit-enumerated  0x803        65535
+   132      133    65535       0    65535       0       0      1   bit-enumerated  0x803        65535
+   133      134    65535       0    65535       0       0      1            index  0x1000       65535
+   134      135    65535       0    65535       0       0      1            index  0x1000       65535
+   135      136    65535       0    65535       0       0      1            index  0x1000       65535
+   136      137    65535       0    65535       0       0      1            index  0x1000       65535
+   137      138    65535       0    65535       0       0      1       enumerated  0x8          65535
+   138      139    65535       0    65535       0       0      4            float  0x22         65535
+   139      140    65535       0    65535       0       0      1       enumerated  0x8          65535
+   140      141    65535       0    65535       0       0      4            float  0x8          65535
+   141      142    65535       0    65535       0       0      4            float  0x8          65535
+   142      143    65535       0    65535       0       0      4            float  0x8          65535
+   143      144    65535       0    65535       0       0      1       enumerated  0x20         65535
+   144      145    65535       0    65535       0       0      1       enumerated  0x20         65535
+   145      146    65535       0    65535       0       0      4            float  0x20         65535
+   146      147    65535       0    65535       0       0      4            float  0x20         65535
+   147      148    65535       0    65535       0       0      4            float  0x8          65535
+   148      149    65535       0    65535       0       0      1       enumerated  0x800        65535
+   149      150    65535       0    65535       0       0      1       enumerated  0x800        65535
+   150      151    65535       0    65535       0       0      1       enumerated  0x100        65535
+   151      152    65535       0    65535       0       0      1       enumerated  0x800        65535
+   152      153    65535       0    65535       0       0      1       enumerated  0x800        65535
+   153      154    65535       0    65535       0       0      1       enumerated  0x800        65535
+   154      155    65535       0    65535       0       0      1       enumerated  0x80         65535
+   155      156    65535       0    65535       0       0      1       enumerated  0x800        65535
+   156      157    65535       0    65535       0       0      1       enumerated  0x800        65535
+   157      158    65535       0    65535       0       0      1       enumerated  0x800        65535
+   158      159    65535       0    65535       0       0      1       enumerated  0x800        65535
+   159      160    65535       0    65535       0       0      1       enumerated  0x1000       65535
+   160      161    65535       0    65535       0       0      1       enumerated  0x1000       65535
+   161      162    65535       0    65535       0       0      1       enumerated  0x1000       65535
+   162      163    65535       0    65535       0       0      1       enumerated  0x1000       65535
+   163      164    65535       0    65535       0       0      1       enumerated  0x800        65535
+   164      165    65535       0    65535       0       0      1       enumerated  0x80         65535
+   165      166    65535       0    65535       0       0      1       enumerated  0x80         65535
+   166      167    65535       0    65535       0       0      1       enumerated  0x800        65535
+   167      168    65535       0    65535       0       0      1       enumerated  0x80         65535
+   168      169    65535       0    65535       0       0      1       enumerated  0x800        65535
+   169      170    65535       0    65535       0       0      1       enumerated  0x1000       65535
+   170      171    65535       0    65535       0       0      1       enumerated  0x40         65535
+   171      172    65535       0    65535       0       0      3         unsigned  0x800        65535
+   172      173    65535       0    65535       0       0      4            float  0x8          65535
+   173      174    65535       0    65535       0       0      4            float  0x8          65535
+   174      175    65535       0    65535       0       0      1       enumerated  0x800        65535
+
+PARAMETER LIST TABLE (table 8)
+------------------------------
+  Index       Blk Item    Param List Mem   Param List
+          Name Tbl Offset    Tbl Offset     Mem Count
+
+CHARACTERISTIC MEMBER TABLE (table 9)
+-------------------------------------
+  Index    Item Tbl  Relation    Size           Type    Class
+            Offset   Tbl Offset
+      0       315      65535        2         unsigned  0x20      
+      1       315      65535        2         unsigned  0x20      
+      2       316      65535        4         unsigned  0x20      
+      3       315      65535        2         unsigned  0x20      
+      4       315      65535        2         unsigned  0x20      
+      5       315      65535        2         unsigned  0x20      
+      6       313      65535        1          integer  0x20      
+      7       315      65535        2         unsigned  0x20      
+      8       315      65535        2         unsigned  0x20      
+      9       314      65535        1         unsigned  0x20      
+
+CHARACTERISTIC MEMBER NAME TABLE (table 10)
+-------------------------------------------
+  Index       Name      Sub-Index
+      0     0xc000ff02       0
+      1     0xc000ff03       1
+      2     0xc000ff04       2
+      3     0xc000ff05       3
+      4     0xc000ff06       4
+      5     0xc000ff07       5
+      6     0xc000ff08       6
+      7     0xc000ff09       7
+      8     0xc000ff0a       8
+      9     0xc000ff0b       9
+
+BLOCK ITEM NAME TABLE (table 11)
+--------------------------------
+  Index       Name      Item Tbl  Relation    Param Tbl  Param List  Read Command  Read Command  Write Command  Write Command
+                         Offset   Tbl Offset    Offset     Offset       Offset         Count         Offset         Count
+      0     0x0            311       65535      65535       65535        65535             0          65535             0
+      1     0xc0009f00     317       65535          0       65535          277             2          65535             0
+      2     0xc0009f01     318       65535          1       65535          279             1            280             1
+      3     0xc0009f02     319       65535          2       65535          281             1          65535             0
+      4     0xc0009f03     223       65535          3       65535        65535             0          65535             0
+      5     0xc0009f04     120       65535          4       65535          113             1          65535             0
+      6     0xc0009f05     122       65535          5       65535          115             1          65535             0
+      7     0xc0009f06     124       65535          6       65535          117             1          65535             0
+      8     0xc0009f07     126       65535          7       65535          119             1          65535             0
+      9     0xc0009f08     119       65535          8       65535          112             1          65535             0
+     10     0xc0009f09     121       65535          9       65535          114             1          65535             0
+     11     0xc0009f0a     123       65535         10       65535          116             1          65535             0
+     12     0xc0009f0b     125       65535         11       65535          118             1          65535             0
+     13     0xc0009f0c     132       65535         12       65535        65535             0          65535             0
+     14     0xc0009f0d     134       65535         13       65535          128             1          65535             0
+     15     0xc0009f0e     133       65535         14       65535          126             2          65535             0
+     16     0xc0009f0f     224       65535         15       65535          211             1            212             1
+     17     0xc0009f10     225       65535         16       65535          213             1            214             1
+     18     0xc0009f11     226       65535         17       65535          215             1            216             1
+     19     0xc0009f12     227       65535         18       65535          217             1            218             1
+     20     0xc0009f13     228       65535         19       65535          219             1            220             1
+     21     0xc0009f14     229       65535         20       65535          221             1            222             1
+     22     0xc0009f15     230       65535         21       65535          223             1            224             1
+     23     0xc0009f16     231       65535         22       65535          225             1            226             1
+     24     0xc0009f17     232       65535         23       65535          227             1            228             1
+     25     0xc0009f18     233       65535         24       65535          229             1            230             1
+     26     0xc0009f19     234       65535         25       65535          231             1            232             1
+     27     0xc0009f1a     235       65535         26       65535          233             1            234             1
+     28     0xc0009f1b     236       65535         27       65535          235             1            236             1
+     29     0xc0009f1c     237       65535         28       65535          237             1            238             1
+     30     0xc0009f1d     238       65535         29       65535          239             1            240             1
+     31     0xc0009f1e     239       65535         30       65535          241             1            242             1
+     32     0xc0009f1f     240       65535         31       65535          243             1            244             1
+     33     0xc0009f20     241       65535         32       65535          245             1            246             1
+     34     0xc0009f21     242       65535         33       65535          247             1            248             1
+     35     0xc0009f22     243       65535         34       65535          249             1            250             1
+     36     0xc0009f23     244       65535         35       65535          251             1            252             1
+     37     0xc0009f24     245       65535         36       65535          253             1            254             1
+     38     0xc0009f25     246       65535         37       65535          255             1            256             1
+     39     0xc0009f26     247       65535         38       65535          257             1            258             1
+     40     0xc0009f27     248       65535         39       65535          259             1            260             1
+     41     0xc0009f29     249       65535         40       65535          261             1            262             1
+     42     0xc0009f2a     250       65535         41       65535          263             1            264             1
+     43     0xc0009f2b     251       65535         42       65535          265             1            266             1
+     44     0xc0009f2c     252       65535         43       65535          267             1            268             1
+     45     0xc0009f2d     253       65535         44       65535          269             1            270             1
+     46     0xc0009f2e     254       65535         45       65535          271             1            272             1
+     47     0xc0009f2f     255       65535         46       65535          273             1            274             1
+     48     0xc0009f30     152       65535         47       65535        65535             0          65535             0
+     49     0xc0009f31     256       65535         48       65535        65535             0          65535             0
+     50     0xc0009f32     149       65535         49       65535          148             1            149             1
+     51     0xc0009f33     148       65535         50       65535        65535             0          65535             0
+     52     0xc0009f34     191       65535         51       65535        65535             0            178             1
+     53     0xc0009f35     144       65535         52       65535          145             1          65535             0
+     54     0xc0009f36     106       65535         53       65535          111             1          65535             0
+     55     0xc0009f37     104       65535         54       65535          108             1          65535             0
+     56     0xc0009f38     145       65535         55       65535          146             1            147             1
+     57     0xc0009f39     257       65535         56       65535        65535             0          65535             0
+     58     0xc0009f3a     135       65535         57       65535          129             2            131             2
+     59     0xc0009f3b     213       65535         58       65535          199             1            200             1
+     60     0xc0009f3c     214       65535         59       65535          201             1            202             1
+     61     0xc0009f3d     215       65535         60       65535          203             1            204             1
+     62     0xc0009f3e     216       65535         61       65535          205             1            206             1
+     63     0xc0009f3f     217       65535         62       65535          207             1            208             1
+     64     0xc0009f40     218       65535         63       65535          209             1            210             1
+     65     0xc0009f41     209       65535         64       65535          195             1            196             1
+     66     0xc0009f42     210       65535         65       65535          197             1            198             1
+     67     0xc0009f43     129       65535         66       65535        65535             0          65535             0
+     68     0xc0009f44     258       65535         67       65535        65535             0          65535             0
+     69     0xc0009f45     189       65535         68       65535          177             1          65535             0
+     70     0xc0009f46     177       65535         69       65535          165             1          65535             0
+     71     0xc0009f47     185       65535         70       65535          173             1          65535             0
+     72     0xc0009f48     178       65535         71       65535          166             1          65535             0
+     73     0xc0009f49     179       65535         72       65535          167             1          65535             0
+     74     0xc0009f4a     180       65535         73       65535          168             1          65535             0
+     75     0xc0009f4b     181       65535         74       65535          169             1          65535             0
+     76     0xc0009f4c     187       65535         75       65535          175             1          65535             0
+     77     0xc0009f4d     188       65535         76       65535          176             1          65535             0
+     78     0xc0009f4e     186       65535         77       65535          174             1          65535             0
+     79     0xc0009f4f     183       65535         78       65535          171             1          65535             0
+     80     0xc0009f50     182       65535         79       65535          170             1          65535             0
+     81     0xc0009f51     176       65535         80       65535          164             1          65535             0
+     82     0xc0009f52     184       65535         81       65535          172             1          65535             0
+     83     0xc0009f53     168       65535         82       65535        65535             0            158             1
+     84     0xc0009f54     170       65535         83       65535        65535             0            159             1
+     85     0xc0009f55     162       65535         84       65535          154             1          65535             0
+     86     0xc0009f56     163       65535         85       65535          155             1          65535             0
+     87     0xc0009f57     164       65535         86       65535          156             1          65535             0
+     88     0xc0009f58     165       65535         87       65535          157             1          65535             0
+     89     0xc0009f59     159       65535         88       65535        65535             0            152             1
+     90     0xc0009f5a     160       65535         89       65535        65535             0            153             1
+     91     0xc0009f5b     138       65535         90       65535          133             1            134             1
+     92     0xc0009f5c     194       65535         91       65535          179             1            180             1
+     93     0xc0009f5d     206       65535         92       65535          193             1            194             1
+     94     0xc0009f5e     205       65535         93       65535          191             1            192             1
+     95     0xc0009f5f     259       65535         94       65535        65535             0          65535             0
+     96     0xc0009f60     198       65535         95       65535          181             1            182             1
+     97     0xc0009f61     199       65535         96       65535          183             1            184             1
+     98     0xc0009f62     200       65535         97       65535          185             1            186             1
+     99     0xc0009f63     201       65535         98       65535          187             1            188             1
+    100     0xc0009f64     202       65535         99       65535          189             1            190             1
+    101     0xc0009f65     130       65535        100       65535          120             3            123             3
+    102     0xc0009f66     306       65535        101       65535          275             1            276             1
+    103     0xc0009f67     172       65535        102       65535          160             1            161             1
+    104     0xc0009f68     173       65535        103       65535          162             1            163             1
+    105     0xc0009f69     303       65535        104       65535        65535             0          65535             0
+    106     0xc0009f6a     304       65535        105       65535        65535             0          65535             0
+    107     0xc0009f6b     156       65535        106       65535          150             1            151             1
+    108     0xc0009f6c     139       65535        107       65535          135             1            136             1
+    109     0xc0009f6d     140       65535        108       65535          137             1            138             1
+    110     0xc0009f6e     141       65535        109       65535          139             1            140             1
+    111     0xc0009f6f     142       65535        110       65535          141             1            142             1
+    112     0xc0009f70     143       65535        111       65535          143             1            144             1
+    113     0xc0009f71       1       65535        112       65535            0            23             23            29
+    114     0xc0009f72       3       65535        113       65535           52             1          65535             0
+    115     0xc0009f73       4       65535        114       65535           53             1             54             2
+    116     0xc0009f74       5       65535        115       65535           56             1          65535             0
+    117     0xc0009f75       6       65535        116       65535           57             1          65535             0
+    118     0xc0009f76       7       65535        117       65535           58             1          65535             0
+    119     0xc0009f77       8       65535        118       65535           59             1          65535             0
+    120     0xc0009f78       9       65535        119       65535           60             1          65535             0
+    121     0xc0009f79      20       65535        120       65535           78             1          65535             0
+    122     0xc0009f7a      10       65535        121       65535           61             1          65535             0
+    123     0xc0009f7b      11       65535        122       65535           62             1             63             1
+    124     0xc0009f7c      12       65535        123       65535        65535             0             64             1
+    125     0xc0009f7d      13       65535        124       65535           65             1             66             1
+    126     0xc0009f7e      14       65535        125       65535           67             1             68             1
+    127     0xc0009f7f      15       65535        126       65535           69             1             70             1
+    128     0xc0009f80      16       65535        127       65535           71             1             72             1
+    129     0xc0009f81      17       65535        128       65535           73             1             74             1
+    130     0xc0009f82      18       65535        129       65535           75             1          65535             0
+    131     0xc0009f83      19       65535        130       65535           76             1             77             1
+    132     0xc0009f84      69       65535        131       65535        65535             0          65535             0
+    133     0xc0009f85      70       65535        132       65535        65535             0          65535             0
+    134     0xc0009f86      54       65535        133       65535        65535             0          65535             0
+    135     0xc0009f87      55       65535        134       65535        65535             0          65535             0
+    136     0xc0009f88      56       65535        135       65535        65535             0          65535             0
+    137     0xc0009f89      57       65535        136       65535        65535             0          65535             0
+    138     0xc0009f8a      78           1        137       65535           79             4             83             3
+    139     0xc0009f8b      80       65535        138       65535        65535             0          65535             0
+    140     0xc0009f8c      83           2        139       65535        65535             0          65535             0
+    141     0xc0009f8d      84           3        140       65535        65535             0          65535             0
+    142     0xc0009f8e      85           4        141       65535        65535             0          65535             0
+    143     0xc0009f8f      81           5        142       65535           86             1          65535             0
+    144     0xc0009f90      82       65535        143       65535           87             1             88             1
+    145     0xc0009f91      86           6        144       65535           89             1          65535             0
+    146     0xc0009f92      87           7        145       65535           90             1          65535             0
+    147     0xc0009f93      88           8        146       65535           91             1          65535             0
+    148     0xc0009f94      89       65535        147       65535           92             1             93             1
+    149     0xc0009f95      91       65535        148       65535           94             1             95             1
+    150     0xc0009f96      92       65535        149       65535           96             1             97             1
+    151     0xc0009f97      93       65535        150       65535        65535             0          65535             0
+    152     0xc0009f98      94       65535        151       65535        65535             0          65535             0
+    153     0xc0009f99      95       65535        152       65535           98             1          65535             0
+    154     0xc0009f9a      96       65535        153       65535        65535             0          65535             0
+    155     0xc0009f9b      42       65535        154       65535        65535             0          65535             0
+    156     0xc0009f9c      50       65535        155       65535        65535             0          65535             0
+    157     0xc0009f9d      51       65535        156       65535        65535             0          65535             0
+    158     0xc0009f9e      52       65535        157       65535        65535             0          65535             0
+    159     0xc0009f9f      53       65535        158       65535        65535             0          65535             0
+    160     0xc0009fa0      38       65535        159       65535        65535             0          65535             0
+    161     0xc0009fa1      39       65535        160       65535        65535             0          65535             0
+    162     0xc0009fa2      41       65535        161       65535        65535             0          65535             0
+    163     0xc0009fa3      40       65535        162       65535        65535             0          65535             0
+    164     0xc0009fa4      43       65535        163       65535        65535             0          65535             0
+    165     0xc0009fa5      44       65535        164       65535        65535             0          65535             0
+    166     0xc0009fa6      45       65535        165       65535        65535             0          65535             0
+    167     0xc0009fa7      46       65535        166       65535        65535             0          65535             0
+    168     0xc0009fa8      47       65535        167       65535        65535             0          65535             0
+    169     0xc0009fa9      48       65535        168       65535        65535             0          65535             0
+    170     0xc0009faa      49       65535        169       65535        65535             0          65535             0
+    171     0xc0009fab     103       65535        170       65535          106             1            107             1
+    172     0xc0009fac     100       65535        171       65535           99             1          65535             0
+    173     0xc0009fad     101       65535        172       65535          100             2            102             1
+    174     0xc0009fae     102       65535        173       65535          103             2            105             1
+    175     0xc0009faf     105       65535        174       65535          109             1            110             1
+
+RELATION TABLE (table 19)
+-------------------------
+  Index    WAO Item    Unit Item     Update    Update
+           Tbl Offset  Tbl Offset  Tbl Offset  Count
+      0      65535          97        65535        0
+      1      65535       65535            0        1
+      2      65535       65535            1        3
+      3      65535          99        65535        0
+      4      65535          99        65535        0
+      5      65535          99        65535        0
+      6      65535       65535            4        2
+      7      65535          98        65535        0
+      8      65535          98        65535        0
+
+COMMAND TABLE (table 20)
+------------------------
+  Index  Parameter  Command  Transaction  Weight  Local Index  Local Index  Local Index
+          Subindex   Number     Number               Count          ID         Value
+      0        0       148           0         3        0
+      1        0       187           0         3        0
+      2        0       164           0         4        0
+      3        0        16           0         5        0
+      4        0         1           0         7        0
+      5        0       176           0         8        0
+      6        0       142           0         9        0
+      7        0         2           0        10        0
+      8        0       183           0        10        0
+      9        0       178           0        11        0
+     10        0         0           0        15        0
+     11        0       166           0        16        0
+     12        0        14           0        18        0
+     13        0       154           0        18        0
+     14        0        15           0        19        0
+     15        0         3           0        21        0
+     16        0       133           0        24        1
+                                            .................... 0x401d        0x8000    
+     17        0       173           0        24        0
+     18        0       128           0        26        0
+     19        0       185           0        26        0
+     20        0        13           0        29        0
+     21        0        33           0        30        0
+     22        0        12           0        34        0
+     23        0         6           0         4        0
+     24        0        44           0         4        0
+     25        0        47           0         4        0
+     26        0       135           0         4        0
+     27        0       149           0         4        0
+     28        0       168           0         4        0
+     29        0       169           0         4        0
+     30        0       188           0         4        0
+     31        0       203           0         4        0
+     32        0       153           0         6        0
+     33        0       165           0         6        0
+     34        0        19           0         8        0
+     35        0        34           0        10        0
+     36        0       143           0        10        0
+     37        0       130           0        12        0
+     38        0       131           0        12        0
+     39        0       175           0        12        0
+     40        0       156           0        14        0
+     41        0       157           0        14        0
+     42        0       177           0        14        0
+     43        0       134           0        15        1
+                                            .................... 0x4025        0x8000    
+     44        0       155           0        16        0
+     45        0       179           0        18        0
+     46        0       184           0        18        0
+     47        0       129           0        22        0
+     48        0       174           0        46        0
+     49        0       186           0        50        0
+     50        0        18           0        56        0
+     51        0        17           0        66        0
+     52        0         0           0        15        0
+     53        0         0           0        15        0
+     54        0       175           0        12        0
+     55        0       155           0        16        0
+     56        0         0           0        15        0
+     57        0         0           0        15        0
+     58        0         0           0        15        0
+     59        0         0           0        15        0
+     60        0         0           0        15        0
+     61        0         0           0        15        0
+     62        0         0           0        15        0
+     63        0       175           0        12        0
+     64        0         6           0         4        0
+     65        0        13           0        29        0
+     66        0        18           0        56        0
+     67        0        12           0        34        0
+     68        0        17           0        66        0
+     69        0        13           0        29        0
+     70        0        18           0        56        0
+     71        0        13           0        29        0
+     72        0        18           0        56        0
+     73        0        15           0        19        0
+     74        0       169           0         4        0
+     75        0        15           0        19        0
+     76        0        16           0         5        0
+     77        0        19           0         8        0
+     78        0         0           0        15        0
+     79        0         1           0         7        0
+     80        0        14           0        18        0
+     81        0         3           0        21        0
+     82        0       128           0        26        0
+     83        0        44           0         4        0
+     84        0       130           0        12        0
+     85        0       131           0        12        0
+     86        0        14           0        18        0
+     87        0        15           0        19        0
+     88        0        47           0         4        0
+     89        0        15           0        19        0
+     90        0        15           0        19        0
+     91        0        15           0        19        0
+     92        0        15           0        19        0
+     93        0        34           0        10        0
+     94        0       128           0        26        0
+     95        0       129           0        22        0
+     96        0       128           0        26        0
+     97        0       129           0        22        0
+     98        0       128           0        26        0
+     99        0        14           0        18        0
+    100        0        14           0        18        0
+    101        0       128           0        26        0
+    102        0       131           0        12        0
+    103        0        14           0        18        0
+    104        0       128           0        26        0
+    105        0       130           0        12        0
+    106        0        15           0        19        0
+    107        0       203           0         4        0
+    108        0       128           0        26        0
+    109        0       128           0        26        0
+    110        0       129           0        22        0
+    111        0       128           0        26        0
+    112        0        33           0        30        0
+    113        0        33           0        30        0
+    114        0        33           0        30        0
+    115        0        33           0        30        0
+    116        0        33           0        30        0
+    117        0        33           0        30        0
+    118        0        33           0        30        0
+    119        0        33           0        30        0
+    120        0       176           0         8        0
+    121        0       178           0        11        0
+    122        0         3           0        21        0
+    123        0       156           0        14        0
+    124        0       157           0        14        0
+    125        0       177           0        14        0
+    126        0         2           0        10        0
+    127        0         3           0        21        0
+    128        0         2           0        10        0
+    129        0       187           0         3        0
+    130        0         3           0        21        0
+    131        0       188           0         4        0
+    132        0       155           0        16        0
+    133        0       128           0        26        0
+    134        0       129           0        22        0
+    135        0       128           0        26        0
+    136        0       129           0        22        0
+    137        0       128           0        26        0
+    138        0       129           0        22        0
+    139        0       128           0        26        0
+    140        0       129           0        22        0
+    141        0       128           0        26        0
+    142        0       129           0        22        0
+    143        0       128           0        26        0
+    144        0       129           0        22        0
+    145        0       128           0        26        0
+    146        0       128           0        26        0
+    147        0       129           0        22        0
+    148        0       133           0        24        1
+                                            .................... 0x401d        0x8000    
+    149        0       135           0         4        0
+    150        0       142           0         9        0
+    151        0       143           0        10        0
+    152        0       153           0         6        0
+    153        0       153           0         6        0
+    154        0       154           0        18        0
+    155        0       154           0        18        0
+    156        0       154           0        18        0
+    157        0       154           0        18        0
+    158        0       156           0        14        0
+    159        0       157           0        14        0
+    160        0       164           0         4        0
+    161        0       165           0         6        0
+    162        0       164           0         4        0
+    163        0       165           0         6        0
+    164        0       166           0        16        0
+    165        0       166           0        16        0
+    166        0       166           0        16        0
+    167        0       166           0        16        0
+    168        0       166           0        16        0
+    169        0       166           0        16        0
+    170        0       166           0        16        0
+    171        0       166           0        16        0
+    172        0       166           0        16        0
+    173        0       166           0        16        0
+    174        0       166           0        16        0
+    175        0       166           0        16        0
+    176        0       166           0        16        0
+    177        0       166           0        16        0
+    178        0       168           0         4        0
+    179        0       173           0        24        0
+    180        0       174           0        46        0
+    181        0       176           0         8        0
+    182        0       177           0        14        0
+    183        0       176           0         8        0
+    184        0       177           0        14        0
+    185        0       176           0         8        0
+    186        0       177           0        14        0
+    187        0       176           0         8        0
+    188        0       177           0        14        0
+    189        0       176           0         8        0
+    190        0       177           0        14        0
+    191        0       178           0        11        0
+    192        0       179           0        18        0
+    193        0       178           0        11        0
+    194        0       179           0        18        0
+    195        0       183           0        10        0
+    196        0       184           0        18        0
+    197        0       183           0        10        0
+    198        0       184           0        18        0
+    199        0       185           0        26        0
+    200        0       186           0        50        0
+    201        0       185           0        26        0
+    202        0       186           0        50        0
+    203        0       185           0        26        0
+    204        0       186           0        50        0
+    205        0       185           0        26        0
+    206        0       186           0        50        0
+    207        0       185           0        26        0
+    208        0       186           0        50        0
+    209        0       185           0        26        0
+    210        0       186           0        50        0
+    211        0       133           0       280        1
+                                            .................... 0x401d        0x0       
+    212        0       134           0       271        1
+                                            .................... 0x4025        0x0       
+    213        0       133           0       280        1
+                                            .................... 0x401d        0x0       
+    214        0       134           0       271        1
+                                            .................... 0x4025        0x1       
+    215        0       133           0       280        1
+                                            .................... 0x401d        0x0       
+    216        0       134           0       271        1
+                                            .................... 0x4025        0x2       
+    217        0       133           0       280        1
+                                            .................... 0x401d        0x0       
+    218        0       134           0       271        1
+                                            .................... 0x4025        0x3       
+    219        0       133           0       280        1
+                                            .................... 0x401d        0x4       
+    220        0       134           0       271        1
+                                            .................... 0x4025        0x4       
+    221        0       133           0       280        1
+                                            .................... 0x401d        0x4       
+    222        0       134           0       271        1
+                                            .................... 0x4025        0x5       
+    223        0       133           0       280        1
+                                            .................... 0x401d        0x4       
+    224        0       134           0       271        1
+                                            .................... 0x4025        0x6       
+    225        0       133           0       280        1
+                                            .................... 0x401d        0x4       
+    226        0       134           0       271        1
+                                            .................... 0x4025        0x7       
+    227        0       133           0       280        1
+                                            .................... 0x401d        0x8       
+    228        0       134           0       271        1
+                                            .................... 0x4025        0x8       
+    229        0       133           0       280        1
+                                            .................... 0x401d        0x8       
+    230        0       134           0       271        1
+                                            .................... 0x4025        0x9       
+    231        0       133           0       280        1
+                                            .................... 0x401d        0x8       
+    232        0       134           0       271        1
+                                            .................... 0x4025        0xa       
+    233        0       133           0       280        1
+                                            .................... 0x401d        0x8       
+    234        0       134           0       271        1
+                                            .................... 0x4025        0xb       
+    235        0       133           0       280        1
+                                            .................... 0x401d        0xc       
+    236        0       134           0       271        1
+                                            .................... 0x4025        0xc       
+    237        0       133           0       280        1
+                                            .................... 0x401d        0xc       
+    238        0       134           0       271        1
+                                            .................... 0x4025        0xd       
+    239        0       133           0       280        1
+                                            .................... 0x401d        0xc       
+    240        0       134           0       271        1
+                                            .................... 0x4025        0xe       
+    241        0       133           0       280        1
+                                            .................... 0x401d        0xc       
+    242        0       134           0       271        1
+                                            .................... 0x4025        0xf       
+    243        0       133           0       280        1
+                                            .................... 0x401d        0x10      
+    244        0       134           0       271        1
+                                            .................... 0x4025        0x10      
+    245        0       133           0       280        1
+                                            .................... 0x401d        0x10      
+    246        0       134           0       271        1
+                                            .................... 0x4025        0x11      
+    247        0       133           0       280        1
+                                            .................... 0x401d        0x10      
+    248        0       134           0       271        1
+                                            .................... 0x4025        0x12      
+    249        0       133           0       280        1
+                                            .................... 0x401d        0x10      
+    250        0       134           0       271        1
+                                            .................... 0x4025        0x13      
+    251        0       133           0       280        1
+                                            .................... 0x401d        0x14      
+    252        0       134           0       271        1
+                                            .................... 0x4025        0x14      
+    253        0       133           0       280        1
+                                            .................... 0x401d        0x14      
+    254        0       134           0       271        1
+                                            .................... 0x4025        0x15      
+    255        0       133           0       280        1
+                                            .................... 0x401d        0x14      
+    256        0       134           0       271        1
+                                            .................... 0x4025        0x16      
+    257        0       133           0       280        1
+                                            .................... 0x401d        0x14      
+    258        0       134           0       271        1
+                                            .................... 0x4025        0x17      
+    259        0       133           0       280        1
+                                            .................... 0x401d        0x18      
+    260        0       134           0       271        1
+                                            .................... 0x4025        0x18      
+    261        0       133           0       280        1
+                                            .................... 0x401d        0x18      
+    262        0       134           0       271        1
+                                            .................... 0x4025        0x19      
+    263        0       133           0       280        1
+                                            .................... 0x401d        0x18      
+    264        0       134           0       271        1
+                                            .................... 0x4025        0x1a      
+    265        0       133           0       280        1
+                                            .................... 0x401d        0x18      
+    266        0       134           0       271        1
+                                            .................... 0x4025        0x1b      
+    267        0       133           0       280        1
+                                            .................... 0x401d        0x1c      
+    268        0       134           0       271        1
+                                            .................... 0x4025        0x1c      
+    269        0       133           0       280        1
+                                            .................... 0x401d        0x1c      
+    270        0       134           0       271        1
+                                            .................... 0x4025        0x1d      
+    271        0       133           0       280        1
+                                            .................... 0x401d        0x1c      
+    272        0       134           0       271        1
+                                            .................... 0x4025        0x1e      
+    273        0       133           0       280        1
+                                            .................... 0x401d        0x1c      
+    274        0       134           0       271        1
+                                            .................... 0x4025        0x1f      
+    275        0       148           0         3        0
+    276        0       149           0         4        0
+    277        1         1           0         7        0
+    278        1         3           0        21        0
+    279        1         3           0        21        0
+    280        1       155           0        16        0
+    281        1         3           0        21        0
+
+UPDATE TABLE (table 12)
+-----------------------
+  Index    Item Tbl     Op Ref     Sub-Index
+           Offset     Item Offset
+      0        79          317            1
+      1        84           84            0
+      2        85           85            0
+      3        81           81            0
+      4        87           87            0
+      5        88           88            0
+
+PARAMETER MEMBER TABLE (table 13)
+---------------------------------
+  Index    Item Tbl  Relation    Size           Type    Class
+            Offset   Tbl Offset
+      0        79          0        4            float  0xA       
+      1       312      65535        1       enumerated  0x22      
+      2       136      65535        4            float  0x12      
+      3       312      65535        1       enumerated  0x22      
+      4       131      65535        4            float  0x2       
+      5       312      65535        1       enumerated  0x22      
+
+PARAMETER ELEMENT TABLE (table 14)
+----------------------------------
+  Index     Sub-Index   Relation
+                        Tbl Offset
+
+PARAMETER MEMBER NAME TABLE (table 15)
+--------------------------------------
+  Index       Name      Sub-Index
+      0     0xc000ff00       0
+      1     0xc000ff01       1
+      2     0xc000ff00       0
+      3     0xc000ff01       1
+      4     0xc000ff00       0
+      5     0xc000ff01       1
+
+BLOCK ITEM TABLE (table 16)
+---------------------------
+  Index  Blk Item ID   Blk Item Name Tbl Offset
+      0     0x97          113
+      1     0x99          114
+      2     0x9a          115
+      3     0x9b          116
+      4     0x9c          117
+      5     0x9d          118
+      6     0x9e          119
+      7     0x9f          120
+      8     0xa0          122
+      9     0xa1          123
+     10     0xa2          124
+     11     0xa3          125
+     12     0xa4          126
+     13     0xa5          127
+     14     0xa6          128
+     15     0xa7          129
+     16     0xa8          130
+     17     0xa9          131
+     18     0xab          121
+     19     0x7e9         160
+     20     0x7ea         161
+     21     0x7eb         163
+     22     0x7ec         162
+     23     0x7ed         155
+     24     0x7ee         164
+     25     0x7ef         165
+     26     0x7f0         166
+     27     0x7f1         167
+     28     0x7f2         168
+     29     0x7f3         169
+     30     0x7f4         170
+     31     0x7f5         156
+     32     0x7f6         157
+     33     0x7f7         158
+     34     0x7f8         159
+     35     0xfa0         134
+     36     0xfa2         135
+     37     0xfa3         136
+     38     0xfa4         137
+     39     0xfb5         132
+     40     0xfb6         133
+     41     0x138d        138
+     42     0x138f        139
+     43     0x1390        143
+     44     0x1391        144
+     45     0x1392        140
+     46     0x1393        141
+     47     0x1394        142
+     48     0x1395        145
+     49     0x1396        146
+     50     0x1397        147
+     51     0x1398        148
+     52     0x139a        149
+     53     0x139b        150
+     54     0x139c        151
+     55     0x139d        152
+     56     0x139e        153
+     57     0x139f        154
+     58     0x1770        172
+     59     0x1774        173
+     60     0x1776        174
+     61     0x177a        171
+     62     0x177b         55
+     63     0x177c        175
+     64     0x177f         54
+     65     0x4000          9
+     66     0x4001          5
+     67     0x4002         10
+     68     0x4003          6
+     69     0x4004         11
+     70     0x4005          7
+     71     0x4006         12
+     72     0x4007          8
+     73     0x400a         67
+     74     0x400b        101
+     75     0x400d         13
+     76     0x400e         15
+     77     0x400f         14
+     78     0x4010         58
+     79     0x4013         91
+     80     0x4014        108
+     81     0x4015        109
+     82     0x4016        110
+     83     0x4017        111
+     84     0x4018        112
+     85     0x4019         53
+     86     0x401a         56
+     87     0x401d         51
+     88     0x401e         50
+     89     0x4025         48
+     90     0x4029        107
+     91     0x402c         89
+     92     0x402d         90
+     93     0x402f         85
+     94     0x4030         86
+     95     0x4031         87
+     96     0x4032         88
+     97     0x4035         83
+     98     0x4037         84
+     99     0x4039        103
+    100     0x403a        104
+    101     0x403d         81
+    102     0x403e         70
+    103     0x403f         72
+    104     0x4040         73
+    105     0x4041         74
+    106     0x4042         75
+    107     0x4043         80
+    108     0x4044         79
+    109     0x4045         82
+    110     0x4046         71
+    111     0x4047         78
+    112     0x4048         76
+    113     0x4049         77
+    114     0x404a         69
+    115     0x404c         52
+    116     0x404f         92
+    117     0x4053         96
+    118     0x4054         97
+    119     0x4055         98
+    120     0x4056         99
+    121     0x4057        100
+    122     0x405b         94
+    123     0x405c         93
+    124     0x405f         65
+    125     0x4060         66
+    126     0x4063         59
+    127     0x4064         60
+    128     0x4065         61
+    129     0x4066         62
+    130     0x4067         63
+    131     0x4068         64
+    132     0x406d          4
+    133     0x406e         16
+    134     0x406f         17
+    135     0x4070         18
+    136     0x4071         19
+    137     0x4072         20
+    138     0x4073         21
+    139     0x4074         22
+    140     0x4075         23
+    141     0x4076         24
+    142     0x4077         25
+    143     0x4078         26
+    144     0x4079         27
+    145     0x407a         28
+    146     0x407b         29
+    147     0x407c         30
+    148     0x407d         31
+    149     0x407e         32
+    150     0x407f         33
+    151     0x4080         34
+    152     0x4081         35
+    153     0x4082         36
+    154     0x4083         37
+    155     0x4084         38
+    156     0x4085         39
+    157     0x4086         40
+    158     0x4087         41
+    159     0x4088         42
+    160     0x4089         43
+    161     0x408a         44
+    162     0x408b         45
+    163     0x408c         46
+    164     0x408d         47
+    165     0x408e         49
+    166     0x408f         57
+    167     0x4090         68
+    168     0x4092         95
+    169     0x40c2        105
+    170     0x40c3        106
+    171     0x40c5        102
+    172     0x8000ff01      0
+    173     0x8000ff11      1
+    174     0x8000ff12      2
+    175     0x8000ff13      3
+
+PARAMETER LIST MEMBER TABLE (table 17)
+--------------------------------------
+  Index   Blk Item Name Tbl Offset
+
+PARAMETER LIST MEMBER NAME TABLE (table 18)
+-------------------------------------------
+  Index   Param List     Param List
+           Mem Name    Mem Tbl Offset
+
+CRITICAL PARAMETER TABLE (table 23)
+-------------------------------------------
+  Index     ID
+      0    0xfa0     
+      1    0xfa2     
+      2    0xfa3     
+      3    0xfa4     
+      4    0x138d    
+      5    0x401d    
+      6    0x4025    
