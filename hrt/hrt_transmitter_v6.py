@@ -26,7 +26,7 @@ Notas:
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
-from db_files.db_types import DBState
+from db.db_types import DBState
 
 try:
     from hrt.hrt_frame import HrtFrame
@@ -154,17 +154,18 @@ COMMANDS: Dict[str, Dict[str, Any]] = {
     "2D": {"resp": ["response_code", "device_status"]},
     "2E": {"resp": ["response_code", "device_status"]},
 
-    "50": {"resp": ["error_code", "pv_code", "sv_code", "tv_code", "qv_code"]},
+    "50": {"req": [], "resp": ["error_code","transmitter_variable_code_1","transmitter_variable_code_2","transmitter_variable_code_3","transmitter_variable_code_4"]},
+    "48": {"req": [], "resp": ["error_code","xmtr_specific_status_0","xmtr_specific_status_1","xmtr_specific_status_2"]},
 
     # -------- Vendor/Extended --------
     # (Se você quiser "DB-only estrito", troque estes literais por row_keys do DB.)
-    "80": {"resp": ["00400C020A0102FBFBFBFB010200000443FEFFFC00000000FA00"]},
-    "88": {"resp": ["704017FFFF"]},
-    "8A": {"resp": ["error_code", "02FF"]},
-    "8C": {"resp": ["704039000000003900000000390000000001FF39FFFFFFFF"]},
-    "A4": {"resp": ["00400400"]},
-    "A6": {"resp": ["00401701000002000000000000000300"]},
-    "B9": {"resp": ["004002"]},
+    "80": {"req": [], "resp": ["comm_status","device_status","0C020A0102","alarm_selection_code","burst_mode_control_code","write_protect_code","write_protect_code","flag_assignment","material_code","0000","04","43FEFFFC","00000000","process_variable_unit_code","00"]},
+    "88": {"req": [], "resp": ["70","device_status","17","FFFF"]},
+    "8A": {"req": [], "resp": ["error_code","02","FF"]},
+    "8C": {"req": [], "resp": ["70","device_status","39","00000000","39","00000000","39","000000000001FF","39","FFFFFFFF"]},
+    "A4": {"req": [], "resp": ["comm_status","device_status","0400"]},
+    "A6": {"req": [], "resp": ["comm_status","device_status","17010000020000000000000000000300"]},
+    "B9": {"req": [], "resp": ["comm_status","device_status","02"]},
 
     "85": {"req": ["$BODY"], "resp": ["error_code", {"MAP": {"KEY": "$BODY", "TABLE": {
         "00": "00020000000042C8000042CC000042CE0000",
@@ -182,18 +183,18 @@ COMMANDS: Dict[str, Dict[str, Any]] = {
         "04": "43FF659F43FF659F",
     }, "DEFAULT": "0000000000000000"}}]},
 
-    "8E": {"resp": ["70403F8000003DCCCCCC00000000000000003DCCCCCC"]},
-    "2B": {"req": ["$BODY"], "resp": ["error_code", "00"]},
-    "9C": {"resp": ["error_code", "0040C00000"]},
-    "B0": {"resp": ["error_code", "796D332F6800"]},
-    "B1": {"req": ["$BODY"], "resp": ["error_code", "024000"]},
-    "B3": {"req": ["$BODY"], "resp": ["error_code", "024000"]},
-    "B4": {"req": ["$BODY"], "resp": ["error_code", "024000"]},
-    "B2": {"resp": ["error_code", "000000000000000000000000"]},
-    "BA": {"resp": ["764042C800003F800000"]},
-    "BD": {"resp": ["7640FB4E4F4E4520"]},
-    "CC": {"req": ["$BODY"], "resp": ["error_code", "$BODY", "00"]},
-    "AD": {"resp": ["error_code", "4C443330314431314954553131303131202020202020"]},
+    "8E": {"req": [], "resp": ["70","device_status","3F800000","3DCCCCCC","0000000000000000","3DCCCCCC"]},
+    "2B": {"req": ["$BODY"], "resp": ["error_code", "cmd2B_resp_suffix"]},
+    "9C": {"req": [], "resp": ["comm_status","device_status","C00000"]},
+    "B0": {"req": [], "resp": ["error_code","total_unit_string","00"]},
+    "B1": {"req": [], "resp": ["error_code","024000"]},
+    "B3": {"req": [], "resp": ["error_code","024000"]},
+    "B4": {"req": [], "resp": ["error_code","024000"]},
+    "B2": {"req": [], "resp": ["error_code","000000000000000000000000"]},
+    "BA": {"req": [], "resp": ["76","device_status","upper_range_value","3F800000"]},
+    "BD": {"req": [], "resp": ["76","device_status","alarm_selection_code","4E4F4E4520"]},
+    "CC": {"req": [], "resp": ["error_code","00"]},
+    "AD": {"req": [], "resp": ["smar_ordering_code"]},
 }
 
 
@@ -411,6 +412,67 @@ class HrtTransmitter:
                 codes.append(c.upper())
         return codes
 
+
+    def _resp_0b(self, hrt_frame_read: HrtFrame) -> str:
+        """Command 0B: Read Unique Identifier (variant used by Pactware/SMAR DTM).
+
+        Status = 00 if request body matches TAG, else 01.
+        """
+        req_body = (hrt_frame_read.body or "").upper()
+        tag = (self._get("tag", "") or "").upper()
+        status = "00" if (req_body == tag) else "01"
+        return (
+            status
+            + "FE"
+            + self._get("manufacturer_id")
+            + self._get("device_type")
+            + self._get("request_preambles")
+            + self._get("hart_revision")
+            + self._get("software_revision")
+            + self._get("transmitter_revision")
+            + self._get("hardware_revision")
+            + self._get("device_flags")
+            + self._get("device_id")
+        )
+
+    def _resp_21(self, hrt_frame_read: HrtFrame) -> str:
+        """Command 21: Read device variables (best-effort).
+
+        The request body usually carries a count followed by variable codes.
+        For unknown codes, we return NaN (7FC00000) with unit FA.
+        """
+        out = [self._get("error_code", "0000")]
+
+        body = (hrt_frame_read.body or "").strip()
+        codes: list[str] = []
+        if body:
+            try:
+                b = bytes.fromhex(body)
+            except ValueError:
+                b = b""
+            if len(b) == 1:
+                codes = [f"{b[0]:02X}"]
+            elif len(b) >= 2:
+                n = b[0]
+                remain = b[1:]
+                if n > 0 and len(remain) >= n:
+                    codes = [f"{x:02X}" for x in remain[:n]]
+                else:
+                    codes = [f"{x:02X}" for x in remain]
+        if not codes:
+            codes = ["00"]
+
+        for code in codes:
+            # Pactware/DTMs commonly ask for variable 00 (PV); some ask 04 for PV as well.
+            if code in ("00", "04"):
+                out.append(self._get("process_variable_unit_code", "FA"))
+                out.append(self._get("PROCESS_VARIABLE", "7FC00000"))
+            else:
+                out.append("FA")
+                out.append("7FC00000")
+
+        return "".join(out)
+
     def _eval_token(self, token: Token, ctx: Dict[str, str]) -> str:
         if token is None:
             return ""
@@ -518,6 +580,12 @@ class HrtTransmitter:
             return self._make_reply(hrt_frame_read.command or "", body)
 
         cmd = (hrt_frame_read.command or "").upper()
+        # Special handlers for commands whose response depends on request body structure
+        if cmd == "0B":
+            return self._make_reply(cmd, self._resp_0b(hrt_frame_read))
+        if cmd == "21":
+            return self._make_reply(cmd, self._resp_21(hrt_frame_read))
+
         spec = self._compiled.get(cmd)
         ctx = {"BODY": (hrt_frame_read.body or "").upper()}
 
